@@ -429,7 +429,7 @@
     window.showDetail = function (name) {
       const d = PERSECUTION_DATA.find(x => x.country === name);
       if (!d) return;
-      view.popup?.close();
+      try { view.closePopup(); } catch(e) { /* ArcGIS 5.0 web component popup */ }
       document.getElementById("detailPlaceholder").style.display = "none";
       const el = document.getElementById("detailContent");
       el.style.display = "block";
