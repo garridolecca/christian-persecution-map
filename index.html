@@ -559,8 +559,36 @@
       if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
       tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
-      // Country slug for URLs
-      const slug = d.country.toLowerCase().replace(/\s+/g, '-');
+      // Country slug for URLs — with overrides for non-standard names
+      const SLUG_OVERRIDES = {
+        // Countries with non-standard URL slugs across organizations
+        "Democratic Republic of Congo": { od: "drc", vom: "drc", uscirf: "democratic-republic-of-congo" },
+        "Myanmar": { od: "myanmar", vom: "myanmar%20(burma)", uscirf: "burma" },
+        "Turkey": { od: "turkiye", vom: "turkey", uscirf: "turkey" },
+        // Unranked countries (no Open Doors country page)
+        "United Arab Emirates": { od: null, vom: "united-arab-emirates", uscirf: null },
+        "Tanzania": { od: null, vom: "tanzania", uscirf: null },
+        "Uganda": { od: null, vom: "uganda", uscirf: null },
+        "Philippines": { od: null, vom: "philippines", uscirf: null },
+        "Israel": { od: null, vom: "israel", uscirf: null },
+        "Lebanon": { od: null, vom: "lebanon", uscirf: null },
+        "Kuwait": { od: null, vom: "kuwait", uscirf: null },
+        "Bahrain": { od: null, vom: "bahrain", uscirf: null },
+        "Djibouti": { od: null, vom: "djibouti", uscirf: null },
+        // Ranked 51+ (Open Doors has no country page for these)
+        "Azerbaijan": { od: null },
+        "Indonesia": { od: null },
+        "Kenya": { od: null },
+        "Malaysia": { od: null },
+        "Russia": { od: null },
+        "Sri Lanka": { od: null },
+        "Vietnam": { od: null },
+      };
+      const defaultSlug = d.country.toLowerCase().replace(/\s+/g, '-');
+      const overrides = SLUG_OVERRIDES[d.country] || {};
+      const odSlug = overrides.od !== undefined ? overrides.od : (d.rank && d.rank <= 50 ? defaultSlug : null);
+      const vomSlug = overrides.vom !== undefined ? overrides.vom : defaultSlug;
+      const uscirfSlug = overrides.uscirf !== undefined ? overrides.uscirf : defaultSlug;
 
       // HeartCry region mapping
       const heartcryRegion = {
@@ -570,41 +598,41 @@
         "Eastern Europe": "europe", "Western Europe": "europe", "Southern Europe": "europe",
       };
 
-      // Build action links — ONLY orgs that actually cover this country
+      // Build action links — ONLY orgs that actually cover this country, with verified URLs
       const actions = [];
 
-      // Open Doors: always present (primary source for all countries in dataset)
-      actions.push({
-        name: "Open Doors", desc: `Country profile, prayer points & giving for ${d.country}`,
-        url: `https://www.opendoors.org/en-US/persecution/countries/${slug}/`,
+      // Open Doors: only for WWL-ranked countries (they have country pages)
+      if (odSlug) actions.push({
+        name: "Open Doors", desc: `Country profile, prayer points & giving`,
+        url: `https://www.opendoors.org/en-US/persecution/countries/${odSlug}/`,
         bg: "#f97316", icon: "&#9829;"
       });
 
       // VOM: only if they flag this country
-      if (d.vom) actions.push({
-        name: "Voice of the Martyrs", desc: `Prayer guide & ways to help in ${d.country}`,
-        url: `https://www.persecution.com/globalprayerguide/${slug}/`,
+      if (d.vom && vomSlug) actions.push({
+        name: "Voice of the Martyrs", desc: `Prayer guide & ways to help`,
+        url: `https://www.persecution.com/globalprayerguide/${vomSlug}/`,
         bg: "#ef4444", icon: "&#9998;"
       });
 
-      // ACN: only if they flag this country
+      // ACN: link to Religious Freedom Report (country pages not available for all)
       if (d.acn) actions.push({
-        name: "Aid to the Church in Need", desc: `Projects & news for ${d.country}`,
-        url: `https://acninternational.org/country/${slug}/`,
+        name: "Aid to the Church in Need", desc: `Religious freedom report & projects`,
+        url: `https://acninternational.org/religiousfreedomreport/`,
         bg: "#8b5cf6", icon: "&#10010;"
       });
 
       // USCIRF: only if they designate this country
-      if (d.uscirf) actions.push({
+      if (d.uscirf && uscirfSlug) actions.push({
         name: "USCIRF", desc: `${d.uscirf} designation — policy recommendations`,
-        url: `https://www.uscirf.gov/countries/${slug}`,
+        url: `https://www.uscirf.gov/countries/${uscirfSlug}`,
         bg: "#3b82f6", icon: "&#9733;"
       });
 
       // ICC: only if they cover this country
       if (d.icc) actions.push({
-        name: "Intl. Christian Concern", desc: `News & relief efforts in ${d.country}`,
-        url: `https://persecution.org/donate/`,
+        name: "Intl. Christian Concern", desc: `News & relief efforts`,
+        url: `https://persecution.org/give/`,
         bg: "#f59e0b", icon: "&#10084;"
       });
 
