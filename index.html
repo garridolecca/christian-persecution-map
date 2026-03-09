@@ -397,8 +397,8 @@
     .intro-overlay {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 0;
       overflow-y: auto;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
@@ -406,93 +406,124 @@
     .intro-card {
       width: 100%; max-width: 580px;
       text-align: center;
+      padding: 2vh 20px 3vh;
+      box-sizing: border-box;
     }
-    .intro-icon { font-size: 48px; margin-bottom: 12px; }
+    .intro-icon { font-size: clamp(28px, 5vh, 48px); margin-bottom: 1vh; }
     .intro-card h1 {
-      font-size: clamp(22px, 5vw, 32px); font-weight: 800;
-      letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 4px;
+      font-size: clamp(18px, 3.5vw, 28px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 2px;
     }
     .intro-card .intro-sub {
-      font-size: clamp(12px, 3vw, 14px); color: var(--text3);
-      margin-bottom: 28px;
+      font-size: clamp(11px, 2.5vw, 13px); color: var(--text3);
+      margin-bottom: clamp(12px, 2.5vh, 24px);
     }
     /* Language chooser */
     .lang-chooser {
-      display: flex; justify-content: center; gap: 12px; margin-bottom: 32px;
+      display: flex; justify-content: center; gap: 10px;
+      margin-bottom: clamp(14px, 2.5vh, 28px);
     }
     .lang-option {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 120px; padding: 16px 10px; border-radius: 12px;
+      width: 110px; padding: clamp(8px, 1.5vh, 16px) 10px; border-radius: 12px;
       border: 2px solid var(--border); background: rgba(255,255,255,0.03);
       cursor: pointer; transition: all 0.2s; font-family: inherit; color: var(--text);
     }
     .lang-option:hover { background: rgba(255,255,255,0.06); }
     .lang-option.selected { border-color: var(--accent); background: rgba(239,68,68,0.08); }
-    .lang-option .lang-flag { font-size: 28px; margin-bottom: 6px; }
-    .lang-option .lang-label { font-size: 14px; font-weight: 700; }
+    .lang-option .lang-flag { font-size: clamp(20px, 3vh, 28px); margin-bottom: 4px; }
+    .lang-option .lang-label { font-size: 13px; font-weight: 700; }
     .lang-option .lang-native { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
     /* How to use */
-    .intro-section { text-align: left; margin-bottom: 24px; }
+    .intro-section { text-align: left; margin-bottom: clamp(12px, 2vh, 20px); }
     .intro-section h3 {
-      font-size: 13px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--text3); margin-bottom: 10px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text3); margin-bottom: 8px;
     }
     .how-steps {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
     .how-step {
-      padding: 12px; border-radius: 10px;
+      padding: 10px; border-radius: 10px;
       background: rgba(255,255,255,0.03); border: 1px solid var(--border);
     }
-    .how-step .step-icon { font-size: 22px; margin-bottom: 6px; }
-    .how-step .step-title { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
-    .how-step .step-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+    .how-step .step-icon { font-size: 18px; margin-bottom: 4px; }
+    .how-step .step-title { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+    .how-step .step-desc { font-size: 10px; color: var(--text3); line-height: 1.4; }
+    @media (max-width: 500px) {
+      .intro-card { padding-top: 1vh; }
+      .intro-icon { font-size: 24px; margin-bottom: 0; }
+      .intro-card h1 { font-size: 18px; }
+      .intro-card .intro-sub { font-size: 11px; margin-bottom: 10px; }
+      .lang-chooser { margin-bottom: 12px; gap: 8px; }
+      .lang-option { width: 100px; padding: 8px 8px; }
+      .lang-option .lang-flag { font-size: 20px; margin-bottom: 2px; }
+      .lang-option .lang-label { font-size: 12px; }
+      .intro-stats { padding: 8px; margin-bottom: 10px; gap: 8px; }
+      .intro-stat .is-n { font-size: 14px; }
+      .intro-stat .is-l { font-size: 7px; }
+      .intro-stat { min-width: 50px; }
+      .intro-section { margin-bottom: 8px; }
+      .intro-section h3 { font-size: 10px; margin-bottom: 5px; }
+      .how-steps { grid-template-columns: 1fr; gap: 4px; }
+      .how-step { display: flex; align-items: center; gap: 10px; padding: 6px 10px; }
+      .how-step .step-icon { font-size: 18px; margin-bottom: 0; flex-shrink: 0; }
+      .how-step .step-text { text-align: left; }
+      .how-step .step-title { font-size: 10px; }
+      .how-step .step-desc { font-size: 9px; }
+      .intro-enter { padding: 10px 30px; font-size: 14px; margin-top: 4px; }
+      .intro-disclaimer { font-size: 8px; margin-top: 6px; }
+    }
 
     /* Sources grid */
     .sources-grid {
       display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
-    @media (max-width: 400px) { .sources-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 500px) { .sources-grid { gap: 4px; }
+      .source-chip { padding: 5px 7px; }
+      .source-chip .sc-name { font-size: 9px; }
+      .source-chip .sc-meta { font-size: 7px; }
+    }
     .source-chip {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-radius: 8px;
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px; border-radius: 8px;
       background: rgba(255,255,255,0.03); border: 1px solid var(--border);
       text-decoration: none; color: var(--text); transition: all 0.15s;
     }
     .source-chip:hover { background: rgba(255,255,255,0.07); }
-    .source-chip .sc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .source-chip .sc-name { font-size: 11px; font-weight: 600; line-height: 1.3; }
-    .source-chip .sc-meta { font-size: 9px; color: var(--text3); }
+    .source-chip .sc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .source-chip .sc-name { font-size: 10px; font-weight: 600; line-height: 1.3; }
+    .source-chip .sc-meta { font-size: 8px; color: var(--text3); }
 
     /* Stats banner */
     .intro-stats {
-      display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 14px; border-radius: 10px;
+      display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: clamp(12px, 2.5vh, 24px);
+      padding: clamp(8px, 1.5vh, 14px); border-radius: 10px;
       background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(245,158,11,0.05));
       border: 1px solid rgba(239,68,68,0.15);
     }
-    .intro-stat { text-align: center; min-width: 70px; }
-    .intro-stat .is-n { font-size: 18px; font-weight: 800; color: var(--accent); }
-    .intro-stat .is-l { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+    .intro-stat { text-align: center; min-width: 60px; }
+    .intro-stat .is-n { font-size: clamp(14px, 2vh, 18px); font-weight: 800; color: var(--accent); }
+    .intro-stat .is-l { font-size: 8px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1px; }
 
     /* Enter button */
     .intro-enter {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px 40px; border-radius: 12px; border: none;
+      padding: clamp(10px, 1.5vh, 14px) 36px; border-radius: 12px; border: none;
       background: var(--accent); color: white;
-      font-size: 16px; font-weight: 700; font-family: inherit;
+      font-size: 15px; font-weight: 700; font-family: inherit;
       cursor: pointer; transition: all 0.2s;
-      margin-top: 8px;
+      margin-top: clamp(4px, 1vh, 8px);
     }
     .intro-enter:hover { background: #dc2626; transform: translateY(-1px); }
-    .intro-enter svg { width: 18px; height: 18px; }
+    .intro-enter svg { width: 16px; height: 16px; }
 
     .intro-disclaimer {
-      font-size: 10px; color: var(--text3); margin-top: 16px; line-height: 1.6; max-width: 440px; margin-left: auto; margin-right: auto;
+      font-size: 9px; color: var(--text3); margin-top: clamp(8px, 1.5vh, 16px); line-height: 1.5; max-width: 440px; margin-left: auto; margin-right: auto;
     }
   </style>
 </head>
@@ -528,18 +559,18 @@
         <div class="how-steps" id="introHowSteps">
           <div class="how-step">
             <div class="step-icon">&#127758;</div>
-            <div class="step-title" id="step1t">Explore the Map</div>
-            <div class="step-desc" id="step1d">Click on any colored marker to see persecution details for that country.</div>
+            <div class="step-text"><div class="step-title" id="step1t">Explore the Map</div>
+            <div class="step-desc" id="step1d">Click on any colored marker to see persecution details for that country.</div></div>
           </div>
           <div class="how-step">
             <div class="step-icon">&#128203;</div>
-            <div class="step-title" id="step2t">Browse the List</div>
-            <div class="step-desc" id="step2d">Use the sidebar to search, filter by severity level, and select countries.</div>
+            <div class="step-text"><div class="step-title" id="step2t">Browse the List</div>
+            <div class="step-desc" id="step2d">Use the sidebar to search, filter by severity level, and select countries.</div></div>
           </div>
           <div class="how-step">
             <div class="step-icon">&#128591;</div>
-            <div class="step-title" id="step3t">Pray & Take Action</div>
-            <div class="step-desc" id="step3d">Each country has prayer points and links to donate or support missionaries.</div>
+            <div class="step-text"><div class="step-title" id="step3t">Pray & Take Action</div>
+            <div class="step-desc" id="step3d">Each country has prayer points and links to donate or support missionaries.</div></div>
           </div>
         </div>
       </div>
@@ -620,7 +651,7 @@
       <!-- MAP -->
       <div class="map-container">
         <div id="viewDiv">
-          <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="3" popup-component-enabled>
+          <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="4" popup-component-enabled>
             <arcgis-zoom slot="top-left"></arcgis-zoom>
           </arcgis-map>
         </div>
@@ -1168,7 +1199,7 @@
     persecutionLayer.when(() => {
       persecutionLayer.queryExtent().then(result => {
         if (result.extent) {
-          view.goTo(result.extent.expand(1.5), { duration: 0 });
+          view.goTo(result.extent.expand(1.2), { duration: 0 });
         }
       });
     });
