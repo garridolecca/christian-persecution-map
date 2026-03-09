@@ -17,10 +17,10 @@
       --brand-primary: #b91c1c;
       --brand-dark: #7f1d1d;
       --brand-light: #fecaca;
-      --extreme: #991b1b;
-      --very-high: #dc2626;
-      --high: #f97316;
-      --moderate: #eab308;
+      --extreme: #ff1744;
+      --very-high: #ff9100;
+      --high: #ffea00;
+      --moderate: #69f0ae;
       --low: #22c55e;
       --bg-dark: #111827;
       --bg-panel: #1f2937;
@@ -52,8 +52,15 @@
     }
 
     calcite-shell-panel {
-      --calcite-shell-panel-width: 380px;
+      --calcite-shell-panel-width: 360px;
       --calcite-color-foreground-1: var(--bg-panel);
+    }
+
+    calcite-shell-panel[slot="panel-start"] calcite-panel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
     }
 
     calcite-panel {
@@ -99,48 +106,48 @@
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 12px;
+      gap: 6px;
+      padding: 8px;
     }
 
     .stat-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 6px;
+      padding: 6px 4px;
       text-align: center;
     }
 
     .stat-card .value {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--brand-primary);
       line-height: 1.2;
     }
 
     .stat-card .label {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     /* ── LEGEND ─────────────────────────────────────────────── */
     .legend-items {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 12px;
+      gap: 2px;
+      padding: 6px 8px;
     }
 
     .legend-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
-      padding: 6px 8px;
+      padding: 4px 8px;
       border-radius: 6px;
       transition: background 0.15s;
     }
@@ -174,12 +181,12 @@
 
     /* ── SEARCH ─────────────────────────────────────────────── */
     .search-box {
-      padding: 12px;
+      padding: 6px 8px;
     }
 
     .search-input {
       width: 100%;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -200,9 +207,11 @@
 
     /* ── COUNTRY LIST ──────────────────────────────────────── */
     .country-list {
-      padding: 0 12px 12px;
-      max-height: calc(100vh - 680px);
+      padding: 0 8px 8px;
       overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      max-height: calc(100vh - 480px);
     }
 
     .country-list::-webkit-scrollbar {
@@ -221,8 +230,8 @@
     .country-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
+      gap: 8px;
+      padding: 5px 8px;
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.15s;
@@ -614,7 +623,7 @@
       <calcite-panel heading="Dashboard">
 
         <!-- Global Stats -->
-        <calcite-block heading="Global Statistics" description="Oct 2023 – Sep 2024" open>
+        <calcite-block heading="Global Statistics" description="Oct 2023 – Sep 2024" collapsible open>
           <calcite-icon slot="icon" icon="graph-bar" scale="s"></calcite-icon>
           <div class="stats-grid">
             <div class="stat-card">
@@ -645,7 +654,7 @@
         </calcite-block>
 
         <!-- Persecution Level Legend -->
-        <calcite-block heading="Persecution Levels" description="Click to filter" open>
+        <calcite-block heading="Persecution Levels" description="Click to filter" collapsible open>
           <calcite-icon slot="icon" icon="legend" scale="s"></calcite-icon>
           <div class="legend-items" id="legendContainer">
             <div class="legend-item" data-level="Extreme" onclick="toggleLevel('Extreme')">
@@ -672,7 +681,7 @@
         </calcite-block>
 
         <!-- Search & Country List -->
-        <calcite-block heading="Countries" description="Search and select" open>
+        <calcite-block heading="Countries" description="Search and select" collapsible open>
           <calcite-icon slot="icon" icon="list" scale="s"></calcite-icon>
           <div class="search-box">
             <input type="text" class="search-input" id="searchInput" placeholder="Search countries..." oninput="filterCountries()" />
@@ -745,10 +754,10 @@
 
     // ── Color map ──────────────────────────────────────────
     const COLORS = {
-      "Extreme": [153, 27, 27],
-      "Very High": [220, 38, 38],
-      "High": [249, 115, 22],
-      "Moderate": [234, 179, 8],
+      "Extreme": [255, 23, 68],
+      "Very High": [255, 145, 0],
+      "High": [255, 234, 0],
+      "Moderate": [105, 240, 174],
     };
 
     const SIZE_MAP = {
@@ -823,9 +832,9 @@
         field: "level",
         defaultSymbol: {
           type: "simple-marker",
-          color: [234, 179, 8],
+          color: [105, 240, 174],
           size: 9,
-          outline: { color: [255, 255, 255, 0.4], width: 1.5 },
+          outline: { color: [0, 0, 0, 0.6], width: 1 },
         },
         uniqueValueInfos: Object.entries(COLORS).map(([level, color]) => ({
           value: level,
@@ -833,7 +842,7 @@
             type: "simple-marker",
             color: color,
             size: SIZE_MAP[level],
-            outline: { color: [255, 255, 255, 0.4], width: 1.5 },
+            outline: { color: [0, 0, 0, 0.6], width: 1 },
           },
         })),
       }),
@@ -843,10 +852,10 @@
         content: (feature) => {
           const a = feature.graphic.attributes;
           const levelColor = {
-            "Extreme": "#991b1b",
-            "Very High": "#dc2626",
-            "High": "#f97316",
-            "Moderate": "#eab308",
+            "Extreme": "#ff1744",
+            "Very High": "#ff9100",
+            "High": "#ffea00",
+            "Moderate": "#69f0ae",
           }[a.level] || "#6b7280";
 
           let sources = [];
@@ -972,7 +981,7 @@
       // Zoom to country
       view.goTo({ center: [data.lng, data.lat], zoom: 5 }, { duration: 1000 });
 
-      showDetail(countryName);
+      window.showDetail(countryName);
     };
 
     // ── Show detail panel ──────────────────────────────────
@@ -989,10 +998,10 @@
       content.style.display = "block";
 
       const levelColor = {
-        "Extreme": "#991b1b",
-        "Very High": "#dc2626",
-        "High": "#f97316",
-        "Moderate": "#eab308",
+        "Extreme": "#ff1744",
+        "Very High": "#ff9100",
+        "High": "#ffea00",
+        "Moderate": "#69f0ae",
       }[d.level] || "#6b7280";
 
       const circumference = 2 * Math.PI * 45;
@@ -1106,7 +1115,7 @@
       const result = response.results.find(r => r.graphic?.layer === persecutionLayer);
       if (result) {
         const country = result.graphic.attributes.country;
-        showDetail(country);
+        window.showDetail(country);
       }
     });
 
