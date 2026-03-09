@@ -224,6 +224,34 @@
     .action-card .ac-name { font-size: 12px; font-weight: 600; }
     .action-card .ac-desc { font-size: 10px; color: var(--text3); margin-top: 1px; }
 
+    /* Prayer section */
+    .prayer-box {
+      background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.06));
+      border: 1px solid rgba(239,68,68,0.15);
+      border-radius: 10px; padding: 14px; margin-top: 6px;
+    }
+    .prayer-box .prayer-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+      font-size: 12px; font-weight: 700; color: var(--text);
+    }
+    .prayer-box .prayer-header svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+    .prayer-list { list-style: none; }
+    .prayer-list li {
+      font-size: 12px; line-height: 1.6; color: var(--text2);
+      padding: 4px 0 4px 18px; position: relative;
+    }
+    .prayer-list li::before {
+      content: ''; width: 6px; height: 6px;
+      background: linear-gradient(135deg, var(--accent), #f59e0b);
+      border-radius: 50%; position: absolute; left: 0; top: 10px;
+    }
+    .missionary-note {
+      margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+      background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);
+      font-size: 11px; line-height: 1.6; color: var(--text2);
+    }
+    .missionary-note strong { color: #22c55e; }
+
     /* ── POPUP ──────────────────────────────────────────────── */
     .popup-c { font-family: 'Inter', sans-serif; padding: 6px 0; }
     .popup-lvl { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: white; margin-bottom: 6px; }
@@ -531,38 +559,84 @@
       if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
       tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
-      // Build action links based on sources covering this country
+      // Country slug for URLs
+      const slug = d.country.toLowerCase().replace(/\s+/g, '-');
+
+      // HeartCry region mapping
+      const heartcryRegion = {
+        "Eastern Asia": "asia", "South Asia": "asia", "Southeast Asia": "asia", "Central Asia": "asia", "Western Asia": "middle-east",
+        "Eastern Africa": "africa", "Western Africa": "africa", "Northern Africa": "africa", "Southern Africa": "africa", "Central Africa": "africa",
+        "Central America": "latin-america", "South America": "latin-america", "Caribbean": "latin-america",
+        "Eastern Europe": "europe", "Western Europe": "europe", "Southern Europe": "europe",
+      };
+
+      // Build action links — ONLY orgs that actually cover this country
       const actions = [];
+
+      // Open Doors: always present (primary source for all countries in dataset)
       actions.push({
-        name: "Open Doors", desc: "Pray, give & advocate",
-        url: "https://www.opendoors.org/en-US/persecution/world-watch-list/",
+        name: "Open Doors", desc: `Country profile, prayer points & giving for ${d.country}`,
+        url: `https://www.opendoors.org/en-US/persecution/countries/${slug}/`,
         bg: "#f97316", icon: "&#9829;"
       });
-      if (d.uscirf) actions.push({
-        name: "USCIRF", desc: "Advocate for policy action",
-        url: "https://www.uscirf.gov/countries",
-        bg: "#3b82f6", icon: "&#9733;"
-      });
-      if (d.acn) actions.push({
-        name: "Aid to the Church in Need", desc: "Donate to support projects",
-        url: "https://acninternational.org/donate/",
-        bg: "#8b5cf6", icon: "&#10010;"
-      });
+
+      // VOM: only if they flag this country
       if (d.vom) actions.push({
-        name: "Voice of the Martyrs", desc: "Sponsor, write & give",
-        url: "https://www.persecution.com/donate/",
+        name: "Voice of the Martyrs", desc: `Prayer guide & ways to help in ${d.country}`,
+        url: `https://www.persecution.com/globalprayerguide/${slug}/`,
         bg: "#ef4444", icon: "&#9998;"
       });
+
+      // ACN: only if they flag this country
+      if (d.acn) actions.push({
+        name: "Aid to the Church in Need", desc: `Projects & news for ${d.country}`,
+        url: `https://acninternational.org/country/${slug}/`,
+        bg: "#8b5cf6", icon: "&#10010;"
+      });
+
+      // USCIRF: only if they designate this country
+      if (d.uscirf) actions.push({
+        name: "USCIRF", desc: `${d.uscirf} designation — policy recommendations`,
+        url: `https://www.uscirf.gov/countries/${slug}`,
+        bg: "#3b82f6", icon: "&#9733;"
+      });
+
+      // ICC: only if they cover this country
       if (d.icc) actions.push({
-        name: "International Christian Concern", desc: "Donate for direct relief",
-        url: "https://persecution.org/donate/",
+        name: "Intl. Christian Concern", desc: `News & relief efforts in ${d.country}`,
+        url: `https://persecution.org/donate/`,
         bg: "#f59e0b", icon: "&#10084;"
       });
+
+      // HeartCry: only if missionaries are present
       if (d.heartcry) actions.push({
-        name: "HeartCry Missionary Society", desc: "Support missionaries on the ground",
-        url: "https://heartcrymissionary.com/donate/",
+        name: "HeartCry Missionary Society", desc: `Active missionaries in ${d.region}`,
+        url: `https://heartcrymissionary.com/the-field/${heartcryRegion[d.region] || 'asia'}/`,
         bg: "#22c55e", icon: "&#9992;"
       });
+
+      // Generate prayer points from country data
+      const prayers = [];
+      prayers.push(`Pray for the estimated ${d.christianPop} Christians in ${d.country} facing ${d.level.toLowerCase()} persecution.`);
+      if (d.persecutionType.includes("Islamic")) prayers.push(`Pray for believers living under Islamic oppression, that they would find safety and be able to worship freely.`);
+      if (d.persecutionType.includes("Communist")) prayers.push(`Pray against government surveillance and control of churches, that believers can gather without fear.`);
+      if (d.persecutionType.includes("nationalism") || d.persecutionType.includes("Nationalist")) prayers.push(`Pray for protection from nationalist violence and that religious freedom laws would be upheld.`);
+      if (d.violence >= 14) prayers.push(`Pray for families of martyrs — violence against Christians here is severe (${d.violence?.toFixed(1)}/16.7).`);
+      if (d.churchLife >= 14) prayers.push(`Pray for pastors and church leaders facing extreme restrictions on worship and church activities.`);
+      if (d.privatLife >= 14) prayers.push(`Pray for secret believers who cannot openly practice their faith even in their own homes.`);
+      if (d.familyLife >= 14) prayers.push(`Pray for converts who face rejection, abuse, or death from their own families.`);
+      prayers.push(`Pray for wisdom and courage for local church leaders and missionaries serving in this region.`);
+
+      // Letter-writing / direct action extras
+      const letterWriting = d.vom ? `<a class="action-card" href="https://www.prisoneralert.com/" target="_blank" rel="noopener">
+        <div class="action-icon" style="background:#ef444422;color:#ef4444">&#9993;</div>
+        <div><div class="ac-name">Write to a Prisoner</div><div class="ac-desc">Send a letter of encouragement via VOM's Prisoner Alert</div></div>
+      </a>` : '';
+
+      // Missionary note for HeartCry countries
+      const missionaryNote = d.heartcry ? `<div class="missionary-note">
+        <strong>HeartCry Missionaries Active</strong> — HeartCry Missionary Society supports indigenous missionaries in ${d.region}. These are local believers trained to share the gospel in their own culture and language. Your support helps sustain their ministry, training, and families.
+      </div>` : '';
 
       el.innerHTML = `
         <button class="back-btn" onclick="window.backToGlobal()">
@@ -606,12 +680,26 @@
         ${d.keyFacts?.length ? `<div class="d-section"><h4>Key Facts</h4><ul>${d.keyFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
         <div class="d-section"><h4>Sources</h4><div class="src-tags">${tags.join('')}</div></div>
         <div class="d-section">
+          <h4>Pray for ${d.country}</h4>
+          <div class="prayer-box">
+            <div class="prayer-header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              Prayer Points
+            </div>
+            <ul class="prayer-list">
+              ${prayers.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+            ${missionaryNote}
+          </div>
+        </div>
+        <div class="d-section">
           <h4>Take Action</h4>
           <div class="action-cards">
             ${actions.map(a => `<a class="action-card" href="${a.url}" target="_blank" rel="noopener">
               <div class="action-icon" style="background:${a.bg}22;color:${a.bg}">${a.icon}</div>
               <div><div class="ac-name">${a.name}</div><div class="ac-desc">${a.desc}</div></div>
             </a>`).join('')}
+            ${letterWriting}
           </div>
         </div>`;
     };
