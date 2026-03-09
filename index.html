@@ -194,6 +194,36 @@
     .src-tag.hc  { background: #16653440; color: #86efac; border: 1px solid #16653480; }
     .src-tag.od  { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
 
+    /* Back to global button */
+    .back-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 9px 0; margin-bottom: 16px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; color: var(--text2);
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .back-btn svg { width: 14px; height: 14px; }
+
+    /* Take Action section */
+    .action-cards { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .action-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      transition: all 0.15s;
+    }
+    .action-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+    .action-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 15px;
+    }
+    .action-card .ac-name { font-size: 12px; font-weight: 600; }
+    .action-card .ac-desc { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
     /* ── POPUP ──────────────────────────────────────────────── */
     .popup-c { font-family: 'Inter', sans-serif; padding: 6px 0; }
     .popup-lvl { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: white; margin-bottom: 6px; }
@@ -465,6 +495,12 @@
       window.showDetail(name);
     };
 
+    window.backToGlobal = function () {
+      view.goTo({ center: [25, 20], zoom: 2 }, { duration: 800 });
+      document.getElementById("detailContent").style.display = "none";
+      document.getElementById("detailPlaceholder").style.display = "flex";
+    };
+
     window.showDetail = function (name) {
       const d = PERSECUTION_DATA.find(x => x.country === name);
       if (!d) return;
@@ -495,7 +531,44 @@
       if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
       tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
+      // Build action links based on sources covering this country
+      const actions = [];
+      actions.push({
+        name: "Open Doors", desc: "Pray, give & advocate",
+        url: "https://www.opendoors.org/en-US/persecution/world-watch-list/",
+        bg: "#f97316", icon: "&#9829;"
+      });
+      if (d.uscirf) actions.push({
+        name: "USCIRF", desc: "Advocate for policy action",
+        url: "https://www.uscirf.gov/countries",
+        bg: "#3b82f6", icon: "&#9733;"
+      });
+      if (d.acn) actions.push({
+        name: "Aid to the Church in Need", desc: "Donate to support projects",
+        url: "https://acninternational.org/donate/",
+        bg: "#8b5cf6", icon: "&#10010;"
+      });
+      if (d.vom) actions.push({
+        name: "Voice of the Martyrs", desc: "Sponsor, write & give",
+        url: "https://www.persecution.com/donate/",
+        bg: "#ef4444", icon: "&#9998;"
+      });
+      if (d.icc) actions.push({
+        name: "International Christian Concern", desc: "Donate for direct relief",
+        url: "https://persecution.org/donate/",
+        bg: "#f59e0b", icon: "&#10084;"
+      });
+      if (d.heartcry) actions.push({
+        name: "HeartCry Missionary Society", desc: "Support missionaries on the ground",
+        url: "https://heartcrymissionary.com/donate/",
+        bg: "#22c55e", icon: "&#9992;"
+      });
+
       el.innerHTML = `
+        <button class="back-btn" onclick="window.backToGlobal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+          Back to Global View
+        </button>
         <div class="detail-head">
           <h2>${d.country}</h2>
           <div class="badge" style="background:${lc}22;color:${lc};border:1px solid ${lc}55;">
@@ -531,7 +604,16 @@
         </div>
         <div class="d-section"><h4>Summary</h4><p>${d.summary}</p></div>
         ${d.keyFacts?.length ? `<div class="d-section"><h4>Key Facts</h4><ul>${d.keyFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
-        <div class="d-section"><h4>Sources</h4><div class="src-tags">${tags.join('')}</div></div>`;
+        <div class="d-section"><h4>Sources</h4><div class="src-tags">${tags.join('')}</div></div>
+        <div class="d-section">
+          <h4>Take Action</h4>
+          <div class="action-cards">
+            ${actions.map(a => `<a class="action-card" href="${a.url}" target="_blank" rel="noopener">
+              <div class="action-icon" style="background:${a.bg}22;color:${a.bg}">${a.icon}</div>
+              <div><div class="ac-name">${a.name}</div><div class="ac-desc">${a.desc}</div></div>
+            </a>`).join('')}
+          </div>
+        </div>`;
     };
 
     view.on("click", async (e) => {
