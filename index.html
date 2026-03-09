@@ -905,6 +905,15 @@
     });
     map.add(persecutionLayer);
 
+    // Fit map to show all data points on load
+    persecutionLayer.when(() => {
+      persecutionLayer.queryExtent().then(result => {
+        if (result.extent) {
+          view.goTo(result.extent.expand(1.5), { duration: 0 });
+        }
+      });
+    });
+
     // ── Build initial UI ────────────────────────────────────────────────
     buildStatsStrips();
     buildLegendRows();
@@ -977,7 +986,9 @@
 
     window.backToGlobal = function () {
       currentDetailCountry = null;
-      view.goTo({ center: [25, 20], zoom: 2 }, { duration: 800 });
+      persecutionLayer.queryExtent().then(result => {
+        if (result.extent) view.goTo(result.extent.expand(1.5), { duration: 800 });
+      });
       // Desktop
       document.getElementById("detailContentDesktop").style.display = "none";
       document.getElementById("detailPlaceholderDesktop").style.display = "flex";
