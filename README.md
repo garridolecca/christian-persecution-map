@@ -1,22 +1,35 @@
 # Global Christian Persecution Map
 
-**[View Live Map](https://garridolecca.github.io/christian-persecution-map/)**
+**[View Live Map](https://garridolecca.github.io/christian-persecution-map/)** | **[Ver Mapa en Vivo](https://garridolecca.github.io/christian-persecution-map/)**
 
-An interactive web application that visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.
+An interactive, bilingual (English/Spanish) web application that visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.
 
 ![ArcGIS](https://img.shields.io/badge/ArcGIS_JS_API-5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Data](https://img.shields.io/badge/data_sources-7-red)
+![Languages](https://img.shields.io/badge/languages-EN%20%7C%20ES-orange)
+![Countries](https://img.shields.io/badge/countries-66+-purple)
 
 ## Features
 
-- **Interactive World Map** — Color-coded markers showing persecution severity across 65+ countries
-- **Multi-Source Data** — Compiled from 7 international organizations for comprehensive coverage
-- **Detailed Country Profiles** — Scores, breakdowns, summaries, and key facts for each country
+- **Interactive World Map** — Color-coded markers showing persecution severity across 66+ countries
+- **Bilingual Support** — Full English and Spanish interface with instant language toggle
+- **Mobile-First Design** — Fully responsive with bottom tab navigation, swipe gestures, and touch-optimized controls
+- **Intro/Splash Page** — Language selection, key statistics, usage guide, and data source overview
+- **Detailed Country Profiles** — Scores, persecution breakdowns, summaries, and key facts
 - **Persecution Breakdown** — Six sub-categories: Private Life, Family Life, Community Life, National Life, Church Life, and Violence
-- **Filtering & Search** — Filter by persecution level, search by country or region
+- **Prayer Points** — Country-specific prayer requests generated from persecution data
+- **Take Action Links** — Direct links to donate, support missionaries, and write to persecuted prisoners for each country
+- **Missionary Information** — HeartCry Missionary Society presence data by region
+- **Filtering & Search** — Filter by persecution level (Extreme, Very High, High, Moderate), search by country or region
 - **Global Statistics Dashboard** — Key figures including Christians killed, churches attacked, and people detained
 - **Source Cross-Reference** — See which organizations flag each country and their designations
+
+## Screenshots
+
+| Desktop | Mobile |
+|---------|--------|
+| Interactive map with country list sidebar and detail panel | Bottom tab navigation with swipe-to-dismiss panels |
 
 ## Data Sources
 
@@ -41,10 +54,10 @@ An interactive web application that visualizes the global landscape of Christian
 
 ## Tech Stack
 
-- **[ArcGIS Maps SDK for JavaScript 5.0](https://developers.arcgis.com/javascript/latest/)** — Interactive mapping
-- **[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)** — UI components and layout
-- **Vanilla JavaScript** — No build tools required
-- **GitHub Pages** — Static hosting
+- **[ArcGIS Maps SDK for JavaScript 5.0](https://developers.arcgis.com/javascript/latest/)** — Interactive mapping with FeatureLayer and UniqueValueRenderer
+- **Vanilla JavaScript** — No frameworks, no build tools required
+- **CSS Custom Properties** — Dark theme with responsive design
+- **GitHub Pages** — Static hosting with automated deployment
 
 ## Global Statistics (2024 Reporting Period)
 
@@ -56,7 +69,7 @@ An interactive web application that visualizes the global landscape of Christian
 
 ## Running Locally
 
-Simply open `index.html` in a modern browser, or serve with any static file server:
+Simply serve with any static file server:
 
 ```bash
 # Python
@@ -65,6 +78,8 @@ python -m http.server 8080
 # Node.js
 npx serve .
 ```
+
+Then open `http://localhost:8080` in a modern browser.
 
 ## Disclaimer
 
