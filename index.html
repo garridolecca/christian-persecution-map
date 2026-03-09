@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Global Christian Persecution Map</title>
   <script type="module" src="https://js.arcgis.com/5.0/"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -22,112 +22,129 @@
       --text3: #64748b;
       --border: #334155;
       --accent: #ef4444;
+      --bottom-bar-h: 56px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
 
-    /* Shell */
-    calcite-shell { --calcite-color-brand: var(--accent); --calcite-font-family: 'Inter', system-ui, sans-serif; }
-    calcite-navigation { --calcite-color-foreground-1: var(--bg); --calcite-color-text-1: var(--text); }
-    calcite-shell-panel { --calcite-shell-panel-width: 340px; --calcite-color-foreground-1: var(--surface); }
-    calcite-shell-panel[slot="panel-end"] { --calcite-shell-panel-width: 380px; }
-    calcite-panel { --calcite-color-foreground-1: var(--surface); --calcite-color-text-1: var(--text); --calcite-color-text-2: var(--text2); }
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    .app-header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 0 16px; height: 52px; flex-shrink: 0;
+      padding-top: var(--safe-top);
+      z-index: 100; position: relative;
+    }
+    .app-header .logo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .app-header .logo-icon { font-size: 20px; flex-shrink: 0; }
+    .app-header .logo-text { min-width: 0; }
+    .app-header .logo-text h1 { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-header .logo-text p { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-header .hdr-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .lang-btn {
+      display: flex; align-items: center; justify-content: center;
+      min-width: 44px; height: 36px; padding: 0 10px;
+      border-radius: 8px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); color: var(--text);
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.1); }
+    .about-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 36px; border-radius: 8px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.05);
+      color: var(--text2); cursor: pointer; transition: all 0.15s;
+    }
+    .about-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .about-btn svg { width: 18px; height: 18px; }
 
-    /* ── LEFT PANEL ─────────────────────────────────────────── */
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      background: var(--surface);
+    /* ============================================================
+       DESKTOP LAYOUT (>= 768px)
+       ============================================================ */
+    .app-shell {
+      display: flex; flex-direction: column; height: 100%;
+    }
+    .app-body {
+      display: flex; flex: 1; min-height: 0; position: relative;
     }
 
-    /* Stats strip */
+    /* Desktop sidebar */
+    .sidebar-panel {
+      width: 340px; flex-shrink: 0; display: flex; flex-direction: column;
+      background: var(--surface); border-right: 1px solid var(--border);
+      overflow: hidden; z-index: 10;
+    }
+    /* Desktop detail panel */
+    .detail-panel {
+      width: 380px; flex-shrink: 0; display: flex; flex-direction: column;
+      background: var(--surface); border-left: 1px solid var(--border);
+      overflow-y: auto; z-index: 10;
+    }
+    .detail-panel::-webkit-scrollbar { width: 4px; }
+    .detail-panel::-webkit-scrollbar-track { background: transparent; }
+    .detail-panel::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+    /* Map container */
+    .map-container { flex: 1; min-width: 0; position: relative; }
+    #viewDiv { width: 100%; height: 100%; }
+    arcgis-map { width: 100%; height: 100%; }
+
+    /* ── Stats strip ────────────────────────────────────────── */
     .stats-strip {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      flex-shrink: 0;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border); flex-shrink: 0;
     }
-    .stat {
-      background: var(--surface);
-      padding: 10px 6px;
-      text-align: center;
-    }
+    .stat { background: var(--surface); padding: 10px 6px; text-align: center; }
     .stat .n { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
     .stat .n.red { color: var(--accent); }
     .stat .t { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
 
-    /* Legend row */
+    /* ── Legend row ──────────────────────────────────────────── */
     .legend-row {
-      display: flex;
-      gap: 4px;
-      padding: 10px 12px;
-      flex-shrink: 0;
-      border-bottom: 1px solid var(--border);
+      display: flex; gap: 4px; padding: 10px 12px;
+      flex-shrink: 0; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
     }
     .legend-pill {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      padding: 5px 4px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text2);
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      transition: all 0.15s;
-      user-select: none;
+      flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center;
+      gap: 5px; padding: 5px 4px; border-radius: 6px; cursor: pointer;
+      font-size: 10px; font-weight: 600; color: var(--text2);
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      transition: all 0.15s; user-select: none; min-height: 44px;
     }
     .legend-pill:hover { background: rgba(255,255,255,0.07); }
     .legend-pill.inactive { opacity: 0.25; }
     .legend-pill.active { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.1); color: var(--text); }
     .legend-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* Search */
-    .search-wrap {
-      padding: 10px 12px;
-      flex-shrink: 0;
-    }
+    /* ── Search ──────────────────────────────────────────────── */
+    .search-wrap { padding: 10px 12px; flex-shrink: 0; }
     .search-wrap input {
-      width: 100%;
-      padding: 8px 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
+      width: 100%; padding: 10px 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color 0.2s; min-height: 44px;
     }
     .search-wrap input:focus { border-color: var(--accent); }
     .search-wrap input::placeholder { color: var(--text3); }
 
-    /* Country list */
-    .country-list {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 0 6px 6px;
-    }
+    /* ── Country list ────────────────────────────────────────── */
+    .country-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 6px 6px; -webkit-overflow-scrolling: touch; }
     .country-list::-webkit-scrollbar { width: 4px; }
     .country-list::-webkit-scrollbar-track { background: transparent; }
     .country-list::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
 
     .c-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 8px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.12s;
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 8px; border-radius: 8px; cursor: pointer;
+      transition: background 0.12s; min-height: 44px;
     }
     .c-item:hover { background: rgba(255,255,255,0.05); }
     .c-item + .c-item { border-top: 1px solid rgba(255,255,255,0.03); }
@@ -141,7 +158,7 @@
     .c-region { font-size: 10px; color: var(--text3); margin-top: 1px; }
     .c-score { font-size: 15px; font-weight: 800; min-width: 30px; text-align: right; }
 
-    /* ── RIGHT PANEL / DETAIL ──────────────────────────────── */
+    /* ── Detail content ──────────────────────────────────────── */
     .detail-empty {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       height: 100%; text-align: center; padding: 40px; color: var(--text3);
@@ -201,19 +218,19 @@
       background: rgba(255,255,255,0.05); border: 1px solid var(--border);
       border-radius: 8px; cursor: pointer; color: var(--text2);
       font-size: 12px; font-weight: 600; font-family: inherit;
-      transition: all 0.15s;
+      transition: all 0.15s; min-height: 44px;
     }
     .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
     .back-btn svg { width: 14px; height: 14px; }
 
-    /* Take Action section */
+    /* Action cards */
     .action-cards { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
     .action-card {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 12px; border-radius: 8px;
       background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      text-decoration: none; color: var(--text);
-      transition: all 0.15s;
+      text-decoration: none; color: var(--text); transition: all 0.15s;
+      min-height: 44px;
     }
     .action-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
     .action-icon {
@@ -252,7 +269,7 @@
     }
     .missionary-note strong { color: #22c55e; }
 
-    /* ── POPUP ──────────────────────────────────────────────── */
+    /* ── Popup ──────────────────────────────────────────────── */
     .popup-c { font-family: 'Inter', sans-serif; padding: 6px 0; }
     .popup-lvl { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: white; margin-bottom: 6px; }
     .popup-sc { font-size: 24px; font-weight: 800; }
@@ -260,102 +277,544 @@
     .popup-sm { font-size: 11px; line-height: 1.6; color: #4b5563; margin-top: 6px; }
     .popup-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
     .popup-tag { font-size: 8px; padding: 2px 5px; border-radius: 3px; font-weight: 600; background: #f3f4f6; color: #374151; }
-    .popup-btn { display: inline-block; margin-top: 8px; padding: 5px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .popup-btn { display: inline-block; margin-top: 8px; padding: 5px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; min-height: 44px; }
 
-    /* ── SOURCES DIALOG ─────────────────────────────────────── */
+    /* ── About Dialog (custom modal) ─────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; max-width: 560px; width: 100%;
+      max-height: 80vh; overflow-y: auto; padding: 24px;
+      color: var(--text2); font-size: 13px; line-height: 1.7;
+    }
+    .modal-box h2 { color: var(--text); font-size: 20px; margin-bottom: 12px; font-weight: 800; }
+    .modal-box h3 { color: var(--text); font-size: 14px; margin: 16px 0 8px; font-weight: 600; }
+    .modal-box p { margin-bottom: 8px; }
+    .modal-box .modal-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; margin-top: 16px; padding: 12px;
+      background: var(--accent); color: white; border: none;
+      border-radius: 8px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; min-height: 44px;
+    }
     .src-list { padding: 0; }
     .src-entry { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-    .src-entry .sn { font-size: 13px; font-weight: 600; }
+    .src-entry .sn { font-size: 13px; font-weight: 600; color: var(--text); }
     .src-entry .sm { font-size: 10px; color: var(--text3); margin-top: 2px; }
     .src-entry a { color: var(--accent); text-decoration: none; font-size: 10px; }
     .src-entry a:hover { text-decoration: underline; }
 
-    #viewDiv { flex: 1; min-height: 0; }
-    arcgis-map { width: 100%; height: 100%; }
+    /* ============================================================
+       MOBILE BOTTOM NAV + PANELS (< 768px)
+       ============================================================ */
+    .bottom-nav {
+      display: none; /* shown on mobile */
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: calc(var(--bottom-bar-h) + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: var(--surface); border-top: 1px solid var(--border);
+      z-index: 200;
+    }
+    .bottom-nav-inner {
+      display: flex; height: var(--bottom-bar-h);
+    }
+    .bottom-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 2px; border: none; background: transparent;
+      color: var(--text3); font-size: 10px; font-weight: 600;
+      font-family: inherit; cursor: pointer; min-height: 44px;
+      transition: color 0.15s;
+    }
+    .bottom-tab svg { width: 22px; height: 22px; }
+    .bottom-tab.active { color: var(--accent); }
 
-    @media (max-width: 768px) {
-      calcite-shell-panel { --calcite-shell-panel-width: 300px; }
+    /* Mobile overlay panels */
+    .mobile-panel {
+      display: none; /* hidden on desktop */
+      position: fixed; top: 0; left: 0; right: 0;
+      bottom: calc(var(--bottom-bar-h) + var(--safe-bottom));
+      z-index: 150; background: var(--surface);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .mobile-panel.visible { transform: translateY(0); }
+    .mobile-panel-header {
+      position: sticky; top: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 16px; background: var(--surface);
+      border-bottom: 1px solid var(--border); min-height: 44px;
+    }
+    .mobile-panel-header h3 { font-size: 14px; font-weight: 700; }
+    .mobile-panel-header .swipe-handle {
+      position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 4px; background: var(--text3); border-radius: 2px; opacity: 0.4;
+    }
+
+    /* ============================================================
+       RESPONSIVE BREAKPOINTS
+       ============================================================ */
+    @media (max-width: 767px) {
+      .app-header .logo-text h1 { font-size: 13px; }
+      .app-header .logo-text p { display: none; }
+
+      .sidebar-panel { display: none; }
+      .detail-panel { display: none; }
+
+      .bottom-nav { display: block; }
+      .mobile-panel { display: block; }
+
+      .map-container { position: fixed; inset: 0; z-index: 0; }
+      .app-body { position: relative; z-index: 1; }
+
+      .stats-strip { overflow-x: auto; display: flex; flex-wrap: nowrap; gap: 0; }
+      .stats-strip .stat { min-width: 90px; flex-shrink: 0; border-right: 1px solid var(--border); }
+
+      /* Ensure map fills below header */
+      #viewDiv { position: fixed; top: 52px; left: 0; right: 0; bottom: calc(var(--bottom-bar-h) + var(--safe-bottom)); z-index: 0; }
+    }
+
+    @media (min-width: 768px) {
+      .bottom-nav { display: none !important; }
+      .mobile-panel { display: none !important; }
+    }
+
+    @media (max-width: 1100px) and (min-width: 768px) {
+      .sidebar-panel { width: 300px; }
+      .detail-panel { width: 340px; }
     }
   </style>
 </head>
-<body class="calcite-mode-dark">
-  <calcite-shell>
-
+<body>
+  <div class="app-shell">
     <!-- HEADER -->
-    <calcite-navigation slot="header">
-      <calcite-navigation-logo slot="logo" heading="Global Christian Persecution Map" description="Data from 7 international monitoring organizations" icon="map-pin"></calcite-navigation-logo>
-      <calcite-action slot="content-end" icon="information" text="About & Sources" id="aboutBtn"></calcite-action>
-    </calcite-navigation>
-
-    <!-- LEFT PANEL -->
-    <calcite-shell-panel slot="panel-start" position="start">
-      <div class="sidebar">
-        <!-- Stats -->
-        <div class="stats-strip">
-          <div class="stat"><div class="n red">365M</div><div class="t">Persecuted</div></div>
-          <div class="stat"><div class="n red">4,998</div><div class="t">Killed</div></div>
-          <div class="stat"><div class="n">14,766</div><div class="t">Churches hit</div></div>
-          <div class="stat"><div class="n">3,906</div><div class="t">Detained</div></div>
-          <div class="stat"><div class="n">3,300</div><div class="t">Abducted</div></div>
-          <div class="stat"><div class="n">78</div><div class="t">Countries</div></div>
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">&#128205;</span>
+        <div class="logo-text">
+          <h1 data-i18n="title">Global Christian Persecution Map</h1>
+          <p data-i18n="subtitle">Data from 7 international monitoring organizations</p>
         </div>
-        <!-- Legend -->
-        <div class="legend-row">
-          <div class="legend-pill active" data-level="All" onclick="toggleLevel('All')"><span>All</span></div>
-          <div class="legend-pill" data-level="Extreme" onclick="toggleLevel('Extreme')"><span class="dot" style="background:var(--extreme)"></span><span>Extreme <b id="count-Extreme">0</b></span></div>
-          <div class="legend-pill" data-level="Very High" onclick="toggleLevel('Very High')"><span class="dot" style="background:var(--very-high)"></span><span>High+ <b id="count-Very High">0</b></span></div>
-          <div class="legend-pill" data-level="High" onclick="toggleLevel('High')"><span class="dot" style="background:var(--high)"></span><span>High <b id="count-High">0</b></span></div>
-          <div class="legend-pill" data-level="Moderate" onclick="toggleLevel('Moderate')"><span class="dot" style="background:var(--moderate)"></span><span>Med <b id="count-Moderate">0</b></span></div>
-        </div>
-        <!-- Search -->
-        <div class="search-wrap">
-          <input type="text" id="searchInput" placeholder="Search countries or regions..." oninput="filterCountries()" />
-        </div>
-        <!-- Country list -->
-        <div class="country-list" id="countryList"></div>
       </div>
-    </calcite-shell-panel>
+      <div class="hdr-actions">
+        <button class="lang-btn" id="langToggle" onclick="window.switchLang()">ES</button>
+        <button class="about-btn" id="aboutBtn" onclick="window.openAbout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+        </button>
+      </div>
+    </header>
 
-    <!-- MAP -->
-    <div id="viewDiv">
-      <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="2" popup-component-enabled>
-        <arcgis-zoom slot="top-left"></arcgis-zoom>
-        <arcgis-search slot="top-right"></arcgis-search>
-      </arcgis-map>
-    </div>
-
-    <!-- RIGHT PANEL -->
-    <calcite-shell-panel slot="panel-end" position="end" id="detailPanel">
-      <calcite-panel heading="Country Details">
-        <div class="detail-empty" id="detailPlaceholder">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-          <p>Click a country on the map or select one from the list to view detailed persecution data.</p>
+    <!-- BODY: sidebar | map | detail (desktop) -->
+    <div class="app-body">
+      <!-- LEFT SIDEBAR (desktop only) -->
+      <div class="sidebar-panel">
+        <div class="stats-strip" id="statsStripDesktop"></div>
+        <div class="legend-row" id="legendRowDesktop"></div>
+        <div class="search-wrap">
+          <input type="text" id="searchInputDesktop" data-i18n-placeholder="searchPlaceholder" placeholder="Search countries or regions..." oninput="window.filterCountries()" />
         </div>
-        <div class="detail" id="detailContent" style="display:none;"></div>
-      </calcite-panel>
-    </calcite-shell-panel>
+        <div class="country-list" id="countryListDesktop"></div>
+      </div>
 
-  </calcite-shell>
+      <!-- MAP -->
+      <div class="map-container">
+        <div id="viewDiv">
+          <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="2" popup-component-enabled>
+            <arcgis-zoom slot="top-left"></arcgis-zoom>
+          </arcgis-map>
+        </div>
+      </div>
 
-  <!-- ABOUT DIALOG -->
-  <calcite-dialog id="aboutDialog" heading="About This Map" kind="brand" scale="l" width-scale="m">
-    <div style="padding: 16px; color: var(--text2); font-size: 13px; line-height: 1.7;">
-      <p style="margin-bottom: 16px; color: var(--text); font-size: 15px; font-weight: 500;">
-        This interactive map visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.
-      </p>
-      <h3 style="color: var(--text); font-size: 14px; margin-bottom: 12px; font-weight: 600;">Data Sources</h3>
-      <div class="src-list" id="sourcesList"></div>
-      <h3 style="color: var(--text); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Methodology</h3>
-      <p>The primary ranking and scoring system is from the Open Doors World Watch List 2025, which evaluates persecution across six categories: Private Life, Family Life, Community Life, National Life, Church Life, and Violence. Each category is scored 0-16.7, for a maximum total of 100.</p>
-      <p style="margin-top: 8px;">Additional designations from USCIRF, ACN, VOM, ICC, and HeartCry Missionary Society are overlaid to provide a comprehensive multi-source view.</p>
-      <h3 style="color: var(--text); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Disclaimer</h3>
-      <p>This map is for educational and awareness purposes. Data reflects the most recently available reports from each organization. Conditions change rapidly and this map may not reflect the current situation in every country.</p>
+      <!-- RIGHT DETAIL (desktop only) -->
+      <div class="detail-panel" id="detailPanelDesktop">
+        <div style="padding:20px;">
+          <div class="detail-empty" id="detailPlaceholderDesktop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+            <p data-i18n="detailPrompt">Click a country on the map or select one from the list to view detailed persecution data.</p>
+          </div>
+          <div class="detail" id="detailContentDesktop" style="display:none;"></div>
+        </div>
+      </div>
     </div>
-    <calcite-button slot="footer-end" kind="brand" appearance="solid" onclick="document.getElementById('aboutDialog').open = false;">Close</calcite-button>
-  </calcite-dialog>
+  </div>
+
+  <!-- MOBILE: List panel -->
+  <div class="mobile-panel" id="mobileListPanel">
+    <div class="mobile-panel-header">
+      <span class="swipe-handle"></span>
+      <h3 data-i18n="countries">Countries</h3>
+    </div>
+    <div class="stats-strip" id="statsStripMobile"></div>
+    <div class="legend-row" id="legendRowMobile"></div>
+    <div class="search-wrap">
+      <input type="text" id="searchInputMobile" data-i18n-placeholder="searchPlaceholder" placeholder="Search countries or regions..." oninput="window.filterCountries()" />
+    </div>
+    <div class="country-list" id="countryListMobile" style="padding-bottom:20px;"></div>
+  </div>
+
+  <!-- MOBILE: Detail panel -->
+  <div class="mobile-panel" id="mobileDetailPanel">
+    <div class="mobile-panel-header">
+      <span class="swipe-handle"></span>
+      <h3 data-i18n="countryDetails">Country Details</h3>
+    </div>
+    <div style="padding:16px;">
+      <div class="detail-empty" id="detailPlaceholderMobile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <p data-i18n="detailPrompt">Click a country on the map or select one from the list to view detailed persecution data.</p>
+      </div>
+      <div class="detail" id="detailContentMobile" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (mobile only) -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bottom-tab" id="tabList" onclick="window.switchTab('list')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        <span data-i18n="tabList">List</span>
+      </button>
+      <button class="bottom-tab active" id="tabMap" onclick="window.switchTab('map')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16m8-12v16"/></svg>
+        <span data-i18n="tabMap">Map</span>
+      </button>
+      <button class="bottom-tab" id="tabDetail" onclick="window.switchTab('detail')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span data-i18n="tabDetail">Detail</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ABOUT MODAL -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal-box">
+      <h2 data-i18n="aboutTitle">About This Map</h2>
+      <p data-i18n="aboutIntro" style="color:var(--text);font-size:15px;font-weight:500;margin-bottom:16px;">This interactive map visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.</p>
+      <h3 data-i18n="dataSources">Data Sources</h3>
+      <div class="src-list" id="sourcesList"></div>
+      <h3 data-i18n="methodology">Methodology</h3>
+      <p data-i18n="methodologyText">The primary ranking and scoring system is from the Open Doors World Watch List 2025, which evaluates persecution across six categories: Private Life, Family Life, Community Life, National Life, Church Life, and Violence. Each category is scored 0-16.7, for a maximum total of 100.</p>
+      <p data-i18n="methodologyText2" style="margin-top:8px;">Additional designations from USCIRF, ACN, VOM, ICC, and HeartCry Missionary Society are overlaid to provide a comprehensive multi-source view.</p>
+      <h3 data-i18n="disclaimer">Disclaimer</h3>
+      <p data-i18n="disclaimerText">This map is for educational and awareness purposes. Data reflects the most recently available reports from each organization. Conditions change rapidly and this map may not reflect the current situation in every country.</p>
+      <button class="modal-close" onclick="window.closeAbout()" data-i18n="close">Close</button>
+    </div>
+  </div>
 
   <script src="data.js"></script>
   <script type="module">
+    // ── I18N System ───────────────────────────────────────────────────────
+    const I18N = {
+      en: {
+        title: "Global Christian Persecution Map",
+        subtitle: "Data from 7 international monitoring organizations",
+        persecuted: "Persecuted",
+        killed: "Killed",
+        churchesHit: "Churches hit",
+        detained: "Detained",
+        abducted: "Abducted",
+        countries: "Countries",
+        all: "All",
+        extreme: "Extreme",
+        veryHigh: "High+",
+        high: "High",
+        moderate: "Med",
+        searchPlaceholder: "Search countries or regions...",
+        countryDetails: "Country Details",
+        detailPrompt: "Click a country on the map or select one from the list to view detailed persecution data.",
+        backToGlobal: "Back to Global View",
+        persecution: "Persecution",
+        unranked: "Unranked",
+        outOf100: "out of 100",
+        privateLife: "Private Life",
+        familyLife: "Family Life",
+        community: "Community",
+        nationalLife: "National Life",
+        churchLife: "Church Life",
+        violence: "Violence",
+        overview: "Overview",
+        region: "Region",
+        mainReligion: "Main Religion",
+        christianPop: "Christian Pop.",
+        persecutionType: "Persecution Type",
+        summary: "Summary",
+        keyFacts: "Key Facts",
+        sources: "Sources",
+        prayFor: "Pray for",
+        prayerPoints: "Prayer Points",
+        takeAction: "Take Action",
+        fullDetails: "Full Details",
+        aboutTitle: "About This Map",
+        aboutIntro: "This interactive map visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.",
+        dataSources: "Data Sources",
+        methodology: "Methodology",
+        methodologyText: "The primary ranking and scoring system is from the Open Doors World Watch List 2025, which evaluates persecution across six categories: Private Life, Family Life, Community Life, National Life, Church Life, and Violence. Each category is scored 0-16.7, for a maximum total of 100.",
+        methodologyText2: "Additional designations from USCIRF, ACN, VOM, ICC, and HeartCry Missionary Society are overlaid to provide a comprehensive multi-source view.",
+        disclaimer: "Disclaimer",
+        disclaimerText: "This map is for educational and awareness purposes. Data reflects the most recently available reports from each organization. Conditions change rapidly and this map may not reflect the current situation in every country.",
+        close: "Close",
+        writePrisoner: "Write to a Prisoner",
+        writePrisonerDesc: "Send a letter of encouragement via VOM's Prisoner Alert",
+        heartcryActive: "HeartCry Missionaries Active",
+        heartcryDesc: "HeartCry Missionary Society supports indigenous missionaries in",
+        heartcryDesc2: "These are local believers trained to share the gospel in their own culture and language. Your support helps sustain their ministry, training, and families.",
+        prayEstimated: "Pray for the estimated",
+        prayChristiansIn: "Christians in",
+        prayFacing: "facing",
+        prayPersecution: "persecution.",
+        prayIslamic: "Pray for believers living under Islamic oppression, that they would find safety and be able to worship freely.",
+        prayCommunist: "Pray against government surveillance and control of churches, that believers can gather without fear.",
+        prayNationalism: "Pray for protection from nationalist violence and that religious freedom laws would be upheld.",
+        prayViolence: "Pray for families of martyrs — violence against Christians here is severe",
+        prayChurch: "Pray for pastors and church leaders facing extreme restrictions on worship and church activities.",
+        praySecret: "Pray for secret believers who cannot openly practice their faith even in their own homes.",
+        prayFamily: "Pray for converts who face rejection, abuse, or death from their own families.",
+        prayWisdom: "Pray for wisdom and courage for local church leaders and missionaries serving in this region.",
+        odDesc: "Country profile, prayer points & giving",
+        vomDesc: "Prayer guide & ways to help",
+        acnDesc: "Religious freedom report & projects",
+        uscirfDesc: "designation — policy recommendations",
+        iccDesc: "News & relief efforts",
+        heartcryMissDesc: "Active missionaries in",
+        tabList: "List",
+        tabMap: "Map",
+        tabDetail: "Detail",
+        levelExtreme: "Extreme",
+        levelVeryHigh: "Very High",
+        levelHigh: "High",
+        levelModerate: "Moderate",
+      },
+      es: {
+        title: "Mapa Global de Persecucion Cristiana",
+        subtitle: "Datos de 7 organizaciones internacionales de monitoreo",
+        persecuted: "Perseguidos",
+        killed: "Asesinados",
+        churchesHit: "Iglesias atacadas",
+        detained: "Detenidos",
+        abducted: "Secuestrados",
+        countries: "Paises",
+        all: "Todos",
+        extreme: "Extrema",
+        veryHigh: "Muy Alta",
+        high: "Alta",
+        moderate: "Mod",
+        searchPlaceholder: "Buscar paises o regiones...",
+        countryDetails: "Detalles del Pais",
+        detailPrompt: "Haz clic en un pais en el mapa o selecciona uno de la lista para ver datos detallados de persecucion.",
+        backToGlobal: "Volver a Vista Global",
+        persecution: "Persecucion",
+        unranked: "Sin clasificar",
+        outOf100: "de 100",
+        privateLife: "Vida Privada",
+        familyLife: "Vida Familiar",
+        community: "Comunidad",
+        nationalLife: "Vida Nacional",
+        churchLife: "Vida Eclesial",
+        violence: "Violencia",
+        overview: "Informacion General",
+        region: "Region",
+        mainReligion: "Religion Principal",
+        christianPop: "Pob. Cristiana",
+        persecutionType: "Tipo de Persecucion",
+        summary: "Resumen",
+        keyFacts: "Datos Clave",
+        sources: "Fuentes",
+        prayFor: "Ora por",
+        prayerPoints: "Puntos de Oracion",
+        takeAction: "Toma Accion",
+        fullDetails: "Ver Detalles",
+        aboutTitle: "Acerca de Este Mapa",
+        aboutIntro: "Este mapa interactivo visualiza el panorama global de la persecucion cristiana utilizando datos compilados de siete organizaciones internacionales de monitoreo.",
+        dataSources: "Fuentes de Datos",
+        methodology: "Metodologia",
+        methodologyText: "El sistema principal de clasificacion y puntuacion proviene de la Lista de Vigilancia Mundial de Open Doors 2025, que evalua la persecucion en seis categorias: Vida Privada, Vida Familiar, Vida Comunitaria, Vida Nacional, Vida Eclesial y Violencia. Cada categoria se puntua de 0 a 16.7, para un total maximo de 100.",
+        methodologyText2: "Las designaciones adicionales de USCIRF, ACN, VOM, ICC y HeartCry Missionary Society se superponen para proporcionar una vista integral de multiples fuentes.",
+        disclaimer: "Aviso Legal",
+        disclaimerText: "Este mapa es para fines educativos y de concientizacion. Los datos reflejan los informes mas recientes disponibles de cada organizacion. Las condiciones cambian rapidamente y este mapa puede no reflejar la situacion actual en cada pais.",
+        close: "Cerrar",
+        writePrisoner: "Escribe a un Prisionero",
+        writePrisonerDesc: "Envia una carta de animo a traves de Alerta de Prisioneros de VOM",
+        heartcryActive: "Misioneros HeartCry Activos",
+        heartcryDesc: "HeartCry Missionary Society apoya misioneros indigenas en",
+        heartcryDesc2: "Son creyentes locales entrenados para compartir el evangelio en su propia cultura e idioma. Tu apoyo ayuda a sostener su ministerio, capacitacion y familias.",
+        prayEstimated: "Ora por los aproximadamente",
+        prayChristiansIn: "cristianos en",
+        prayFacing: "que enfrentan persecucion",
+        prayPersecution: ".",
+        prayIslamic: "Ora por los creyentes que viven bajo opresion islamica, para que encuentren seguridad y puedan adorar libremente.",
+        prayCommunist: "Ora contra la vigilancia gubernamental y el control de las iglesias, para que los creyentes puedan reunirse sin temor.",
+        prayNationalism: "Ora por proteccion contra la violencia nacionalista y que las leyes de libertad religiosa sean respetadas.",
+        prayViolence: "Ora por las familias de los martires — la violencia contra los cristianos aqui es severa",
+        prayChurch: "Ora por los pastores y lideres de iglesias que enfrentan restricciones extremas en la adoracion y actividades eclesiales.",
+        praySecret: "Ora por los creyentes secretos que no pueden practicar su fe abiertamente ni siquiera en sus propios hogares.",
+        prayFamily: "Ora por los convertidos que enfrentan rechazo, abuso o muerte de sus propias familias.",
+        prayWisdom: "Ora por sabiduria y valentia para los lideres de iglesias locales y misioneros que sirven en esta region.",
+        odDesc: "Perfil del pais, puntos de oracion y donaciones",
+        vomDesc: "Guia de oracion y formas de ayudar",
+        acnDesc: "Informe de libertad religiosa y proyectos",
+        uscirfDesc: "designacion — recomendaciones politicas",
+        iccDesc: "Noticias y esfuerzos de ayuda",
+        heartcryMissDesc: "Misioneros activos en",
+        tabList: "Lista",
+        tabMap: "Mapa",
+        tabDetail: "Detalle",
+        levelExtreme: "Extrema",
+        levelVeryHigh: "Muy Alta",
+        levelHigh: "Alta",
+        levelModerate: "Moderada",
+      }
+    };
+
+    let currentLang = "en";
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en[key]) || key;
+    }
+
+    function updateStaticI18n() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.placeholder = t(key);
+      });
+      document.title = t("title");
+      document.getElementById("langToggle").textContent = currentLang === "en" ? "ES" : "EN";
+    }
+
+    function levelLabel(level) {
+      const map = { "Extreme": "levelExtreme", "Very High": "levelVeryHigh", "High": "levelHigh", "Moderate": "levelModerate" };
+      return t(map[level] || level);
+    }
+
+    window.switchLang = function() {
+      currentLang = currentLang === "en" ? "es" : "en";
+      updateStaticI18n();
+      buildStatsStrips();
+      buildLegendRows();
+      buildCountryList(getSearchValue());
+      // Re-render detail if showing
+      if (currentDetailCountry) window.showDetail(currentDetailCountry);
+      // Re-render about if open
+      if (document.getElementById("aboutModal").classList.contains("open")) {
+        renderAboutSources();
+      }
+    };
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    function isMobile() { return window.innerWidth < 768; }
+    function getSearchValue() {
+      if (isMobile()) return document.getElementById("searchInputMobile").value;
+      return document.getElementById("searchInputDesktop").value;
+    }
+
+    // ── Stats Strip Builder ─────────────────────────────────────────────
+    function buildStatsStrips() {
+      const statsData = [
+        { n: "365M", cls: "red", key: "persecuted" },
+        { n: "4,998", cls: "red", key: "killed" },
+        { n: "14,766", cls: "", key: "churchesHit" },
+        { n: "3,906", cls: "", key: "detained" },
+        { n: "3,300", cls: "", key: "abducted" },
+        { n: "78", cls: "", key: "countries" },
+      ];
+      const html = statsData.map(s =>
+        `<div class="stat"><div class="n ${s.cls}">${s.n}</div><div class="t">${t(s.key)}</div></div>`
+      ).join('');
+      document.getElementById("statsStripDesktop").innerHTML = html;
+      document.getElementById("statsStripMobile").innerHTML = html;
+    }
+
+    // ── Legend Builder ───────────────────────────────────────────────────
+    const LEVEL_KEYS = [
+      { level: "All", key: "all", color: null },
+      { level: "Extreme", key: "extreme", color: "var(--extreme)" },
+      { level: "Very High", key: "veryHigh", color: "var(--very-high)" },
+      { level: "High", key: "high", color: "var(--high)" },
+      { level: "Moderate", key: "moderate", color: "var(--moderate)" },
+    ];
+
+    function buildLegendRows() {
+      const counts = { "Extreme": 0, "Very High": 0, "High": 0, "Moderate": 0 };
+      PERSECUTION_DATA.forEach(d => { if (counts[d.level] !== undefined) counts[d.level]++; });
+
+      const html = LEVEL_KEYS.map(lk => {
+        const active = lk.level === "All" ? allActive : (!allActive && activeLevels.has(lk.level));
+        const inactive = lk.level !== "All" && !allActive && !activeLevels.has(lk.level);
+        const cls = `legend-pill${active ? ' active' : ''}${inactive ? ' inactive' : ''}`;
+        const dot = lk.color ? `<span class="dot" style="background:${lk.color}"></span>` : '';
+        const countBadge = lk.level !== "All" ? ` <b>${counts[lk.level]}</b>` : '';
+        return `<div class="${cls}" data-level="${lk.level}" onclick="window.toggleLevel('${lk.level}')">
+          ${dot}<span>${t(lk.key)}${countBadge}</span>
+        </div>`;
+      }).join('');
+
+      document.getElementById("legendRowDesktop").innerHTML = html;
+      document.getElementById("legendRowMobile").innerHTML = html;
+    }
+
+    // ── Mobile Tab Switching ────────────────────────────────────────────
+    let currentTab = "map";
+
+    window.switchTab = function(tab) {
+      currentTab = tab;
+      document.querySelectorAll(".bottom-tab").forEach(b => b.classList.remove("active"));
+      document.getElementById("tab" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+
+      const listPanel = document.getElementById("mobileListPanel");
+      const detailPanel = document.getElementById("mobileDetailPanel");
+
+      if (tab === "list") {
+        listPanel.classList.add("visible");
+        detailPanel.classList.remove("visible");
+      } else if (tab === "detail") {
+        detailPanel.classList.add("visible");
+        listPanel.classList.remove("visible");
+      } else {
+        listPanel.classList.remove("visible");
+        detailPanel.classList.remove("visible");
+      }
+    };
+
+    // ── Swipe-down to close on mobile detail panel ──────────────────────
+    (function initSwipe() {
+      let startY = 0;
+      const panel = document.getElementById("mobileDetailPanel");
+      panel.addEventListener("touchstart", e => {
+        if (panel.scrollTop <= 0) startY = e.touches[0].clientY;
+        else startY = 0;
+      }, { passive: true });
+      panel.addEventListener("touchend", e => {
+        if (startY > 0 && e.changedTouches[0].clientY - startY > 80) {
+          window.switchTab("map");
+        }
+        startY = 0;
+      }, { passive: true });
+
+      const listPanel = document.getElementById("mobileListPanel");
+      let listStartY = 0;
+      listPanel.addEventListener("touchstart", e => {
+        if (listPanel.scrollTop <= 0) listStartY = e.touches[0].clientY;
+        else listStartY = 0;
+      }, { passive: true });
+      listPanel.addEventListener("touchend", e => {
+        if (listStartY > 0 && e.changedTouches[0].clientY - listStartY > 80) {
+          window.switchTab("map");
+        }
+        listStartY = 0;
+      }, { passive: true });
+    })();
+
+    // ── ArcGIS Map Setup ────────────────────────────────────────────────
     const mapEl = document.querySelector("arcgis-map");
     await mapEl.viewOnReady();
     const view = mapEl.view;
@@ -373,6 +832,8 @@
     const HEX    = { "Extreme": "#ef4444", "Very High": "#f59e0b", "High": "#3b82f6", "Moderate": "#22c55e" };
 
     const activeLevels = new Set(["Extreme", "Very High", "High", "Moderate"]);
+    let allActive = true;
+    let currentDetailCountry = null;
 
     const graphics = PERSECUTION_DATA.map((d, i) => new Graphic({
       geometry: new Point({ longitude: d.lng, latitude: d.lat }),
@@ -427,12 +888,12 @@
           const div = document.createElement("div");
           div.classList.add("popup-c");
           div.innerHTML = `
-            <span class="popup-lvl" style="background:${lc}">${a.level} Persecution</span>
+            <span class="popup-lvl" style="background:${lc}">${levelLabel(a.level)} ${t("persecution")}</span>
             ${a.rank < 999 ? `<div><span class="popup-sc">${a.score}</span><span class="popup-mx">/100</span> <span style="font-size:11px;color:#6b7280">(#${a.rank})</span></div>` : ''}
-            <div style="margin-top:6px;font-size:11px;color:#6b7280"><strong>Region:</strong> ${a.region} | <strong>Type:</strong> ${a.persecutionType}</div>
+            <div style="margin-top:6px;font-size:11px;color:#6b7280"><strong>${t("region")}:</strong> ${a.region} | <strong>${t("persecutionType")}:</strong> ${a.persecutionType}</div>
             <p class="popup-sm">${a.summary}</p>
             ${src.length ? `<div class="popup-tags">${src.map(s => `<span class="popup-tag">${s}</span>`).join('')}</div>` : ''}
-            <button class="popup-btn" onclick="window.showDetail('${a.country}')">Full Details</button>`;
+            <button class="popup-btn" onclick="window.showDetail('${a.country.replace(/'/g, "\\'")}')">${t("fullDetails")}</button>`;
           return div;
         },
       },
@@ -444,53 +905,41 @@
     });
     map.add(persecutionLayer);
 
-    // Counts
-    const counts = { "Extreme": 0, "Very High": 0, "High": 0, "Moderate": 0 };
-    PERSECUTION_DATA.forEach(d => { if (counts[d.level] !== undefined) counts[d.level]++; });
-    Object.entries(counts).forEach(([l, c]) => { const el = document.getElementById(`count-${l}`); if (el) el.textContent = c; });
+    // ── Build initial UI ────────────────────────────────────────────────
+    buildStatsStrips();
+    buildLegendRows();
 
-    // Country list
+    // ── Country List ────────────────────────────────────────────────────
     function buildCountryList(filter = "") {
-      const list = document.getElementById("countryList");
       const f = filter.toLowerCase();
       const filtered = PERSECUTION_DATA.filter(d =>
         (d.country.toLowerCase().includes(f) || d.region.toLowerCase().includes(f)) &&
         activeLevels.has(d.level)
       ).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
-      list.innerHTML = filtered.map(d => {
+      const html = filtered.map(d => {
         const c = HEX[d.level] || "var(--text3)";
-        return `<div class="c-item" onclick="window.selectCountry('${d.country}')">
+        return `<div class="c-item" onclick="window.selectCountry('${d.country.replace(/'/g, "\\'")}')">
           <div class="c-rank" style="background:${c}">${d.rank || '-'}</div>
           <div class="c-info"><div class="c-name">${d.country}</div><div class="c-region">${d.region}</div></div>
           <div class="c-score" style="color:${c}">${d.score || '-'}</div>
         </div>`;
       }).join('');
+
+      document.getElementById("countryListDesktop").innerHTML = html;
+      document.getElementById("countryListMobile").innerHTML = html;
     }
     buildCountryList();
 
-    window.filterCountries = function () { buildCountryList(document.getElementById("searchInput").value); };
+    window.filterCountries = function () {
+      const val = getSearchValue();
+      // Sync both search inputs
+      document.getElementById("searchInputDesktop").value = val;
+      document.getElementById("searchInputMobile").value = val;
+      buildCountryList(val);
+    };
 
-    let allActive = true; // tracks whether "All" is the current mode
-
-    function updatePillStyles() {
-      document.querySelectorAll(".legend-pill").forEach(pill => {
-        const lvl = pill.dataset.level;
-        if (allActive) {
-          pill.classList.remove("inactive");
-          pill.classList.toggle("active", lvl === "All");
-        } else {
-          if (lvl === "All") {
-            pill.classList.remove("active");
-            pill.classList.remove("inactive");
-          } else {
-            pill.classList.toggle("active", activeLevels.has(lvl));
-            pill.classList.toggle("inactive", !activeLevels.has(lvl));
-          }
-        }
-      });
-    }
-
+    // ── Level Filter ────────────────────────────────────────────────────
     function applyLevelFilter() {
       if (allActive || activeLevels.size === 4) {
         persecutionLayer.definitionExpression = null;
@@ -499,8 +948,8 @@
       } else {
         persecutionLayer.definitionExpression = `level IN (${[...activeLevels].map(l => `'${l}'`).join(",")})`;
       }
-      updatePillStyles();
-      buildCountryList(document.getElementById("searchInput").value);
+      buildLegendRows();
+      buildCountryList(getSearchValue());
     }
 
     window.toggleLevel = function (level) {
@@ -516,38 +965,65 @@
       applyLevelFilter();
     };
 
+    // ── Country Selection ───────────────────────────────────────────────
     window.selectCountry = function (name) {
       const d = PERSECUTION_DATA.find(x => x.country === name);
       if (!d) return;
       view.goTo({ center: [d.lng, d.lat], zoom: 5 }, { duration: 800 });
       window.showDetail(name);
+      // On mobile, switch to detail tab
+      if (isMobile()) window.switchTab("detail");
     };
 
     window.backToGlobal = function () {
+      currentDetailCountry = null;
       view.goTo({ center: [25, 20], zoom: 2 }, { duration: 800 });
-      document.getElementById("detailContent").style.display = "none";
-      document.getElementById("detailPlaceholder").style.display = "flex";
+      // Desktop
+      document.getElementById("detailContentDesktop").style.display = "none";
+      document.getElementById("detailPlaceholderDesktop").style.display = "flex";
+      // Mobile
+      document.getElementById("detailContentMobile").style.display = "none";
+      document.getElementById("detailPlaceholderMobile").style.display = "flex";
+      if (isMobile()) window.switchTab("map");
     };
 
+    // ── Show Detail ─────────────────────────────────────────────────────
     window.showDetail = function (name) {
       const d = PERSECUTION_DATA.find(x => x.country === name);
       if (!d) return;
-      try { view.closePopup(); } catch(e) { /* ArcGIS 5.0 web component popup */ }
-      document.getElementById("detailPlaceholder").style.display = "none";
-      const el = document.getElementById("detailContent");
-      el.style.display = "block";
+      currentDetailCountry = name;
+      try { view.closePopup(); } catch(e) {}
 
+      const html = buildDetailHTML(d);
+
+      // Desktop
+      document.getElementById("detailPlaceholderDesktop").style.display = "none";
+      const dkEl = document.getElementById("detailContentDesktop");
+      dkEl.style.display = "block";
+      dkEl.innerHTML = html;
+
+      // Mobile
+      document.getElementById("detailPlaceholderMobile").style.display = "none";
+      const mbEl = document.getElementById("detailContentMobile");
+      mbEl.style.display = "block";
+      mbEl.innerHTML = html;
+
+      // On mobile, switch to detail tab
+      if (isMobile()) window.switchTab("detail");
+    };
+
+    function buildDetailHTML(d) {
       const lc = HEX[d.level] || "#6b7280";
       const circ = 2 * Math.PI * 42;
       const off = circ * (1 - (d.score || 0) / 100);
 
       const subs = [
-        { l: "Private Life", v: d.privatLife },
-        { l: "Family Life", v: d.familyLife },
-        { l: "Community", v: d.communityLife },
-        { l: "National Life", v: d.nationalLife },
-        { l: "Church Life", v: d.churchLife },
-        { l: "Violence", v: d.violence },
+        { key: "privateLife", v: d.privatLife },
+        { key: "familyLife", v: d.familyLife },
+        { key: "community", v: d.communityLife },
+        { key: "nationalLife", v: d.nationalLife },
+        { key: "churchLife", v: d.churchLife },
+        { key: "violence", v: d.violence },
       ];
 
       let tags = [];
@@ -559,13 +1035,11 @@
       if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
       tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
-      // Country slug for URLs — with overrides for non-standard names
+      // Slug overrides
       const SLUG_OVERRIDES = {
-        // Countries with non-standard URL slugs across organizations
         "Democratic Republic of Congo": { od: "drc", vom: "drc", uscirf: "democratic-republic-of-congo" },
         "Myanmar": { od: "myanmar", vom: "myanmar%20(burma)", uscirf: "burma" },
         "Turkey": { od: "turkiye", vom: "turkey", uscirf: "turkey" },
-        // Unranked countries (no Open Doors country page)
         "United Arab Emirates": { od: null, vom: "united-arab-emirates", uscirf: null },
         "Tanzania": { od: null, vom: "tanzania", uscirf: null },
         "Uganda": { od: null, vom: "uganda", uscirf: null },
@@ -575,7 +1049,6 @@
         "Kuwait": { od: null, vom: "kuwait", uscirf: null },
         "Bahrain": { od: null, vom: "bahrain", uscirf: null },
         "Djibouti": { od: null, vom: "djibouti", uscirf: null },
-        // Ranked 51+ (Open Doors has no country page for these)
         "Azerbaijan": { od: null },
         "Indonesia": { od: null },
         "Kenya": { od: null },
@@ -590,7 +1063,6 @@
       const vomSlug = overrides.vom !== undefined ? overrides.vom : defaultSlug;
       const uscirfSlug = overrides.uscirf !== undefined ? overrides.uscirf : defaultSlug;
 
-      // HeartCry region mapping
       const heartcryRegion = {
         "Eastern Asia": "asia", "South Asia": "asia", "Southeast Asia": "asia", "Central Asia": "asia", "Western Asia": "middle-east",
         "Eastern Africa": "africa", "Western Africa": "africa", "Northern Africa": "africa", "Southern Africa": "africa", "Central Africa": "africa",
@@ -598,83 +1070,71 @@
         "Eastern Europe": "europe", "Western Europe": "europe", "Southern Europe": "europe",
       };
 
-      // Build action links — ONLY orgs that actually cover this country, with verified URLs
+      // Build action links
       const actions = [];
-
-      // Open Doors: only for WWL-ranked countries (they have country pages)
       if (odSlug) actions.push({
-        name: "Open Doors", desc: `Country profile, prayer points & giving`,
+        name: "Open Doors", desc: t("odDesc"),
         url: `https://www.opendoors.org/en-US/persecution/countries/${odSlug}/`,
         bg: "#f97316", icon: "&#9829;"
       });
-
-      // VOM: only if they flag this country
       if (d.vom && vomSlug) actions.push({
-        name: "Voice of the Martyrs", desc: `Prayer guide & ways to help`,
+        name: "Voice of the Martyrs", desc: t("vomDesc"),
         url: `https://www.persecution.com/globalprayerguide/${vomSlug}/`,
         bg: "#ef4444", icon: "&#9998;"
       });
-
-      // ACN: link to Religious Freedom Report (country pages not available for all)
       if (d.acn) actions.push({
-        name: "Aid to the Church in Need", desc: `Religious freedom report & projects`,
+        name: "Aid to the Church in Need", desc: t("acnDesc"),
         url: `https://acninternational.org/religiousfreedomreport/`,
         bg: "#8b5cf6", icon: "&#10010;"
       });
-
-      // USCIRF: only if they designate this country
       if (d.uscirf && uscirfSlug) actions.push({
-        name: "USCIRF", desc: `${d.uscirf} designation — policy recommendations`,
+        name: "USCIRF", desc: `${d.uscirf} ${t("uscirfDesc")}`,
         url: `https://www.uscirf.gov/countries/${uscirfSlug}`,
         bg: "#3b82f6", icon: "&#9733;"
       });
-
-      // ICC: only if they cover this country
       if (d.icc) actions.push({
-        name: "Intl. Christian Concern", desc: `News & relief efforts`,
+        name: "Intl. Christian Concern", desc: t("iccDesc"),
         url: `https://persecution.org/give/`,
         bg: "#f59e0b", icon: "&#10084;"
       });
-
-      // HeartCry: only if missionaries are present
       if (d.heartcry) actions.push({
-        name: "HeartCry Missionary Society", desc: `Active missionaries in ${d.region}`,
+        name: "HeartCry Missionary Society", desc: `${t("heartcryMissDesc")} ${d.region}`,
         url: `https://heartcrymissionary.com/the-field/${heartcryRegion[d.region] || 'asia'}/`,
         bg: "#22c55e", icon: "&#9992;"
       });
 
-      // Generate prayer points from country data
+      // Prayer points
       const prayers = [];
-      prayers.push(`Pray for the estimated ${d.christianPop} Christians in ${d.country} facing ${d.level.toLowerCase()} persecution.`);
-      if (d.persecutionType.includes("Islamic")) prayers.push(`Pray for believers living under Islamic oppression, that they would find safety and be able to worship freely.`);
-      if (d.persecutionType.includes("Communist")) prayers.push(`Pray against government surveillance and control of churches, that believers can gather without fear.`);
-      if (d.persecutionType.includes("nationalism") || d.persecutionType.includes("Nationalist")) prayers.push(`Pray for protection from nationalist violence and that religious freedom laws would be upheld.`);
-      if (d.violence >= 14) prayers.push(`Pray for families of martyrs — violence against Christians here is severe (${d.violence?.toFixed(1)}/16.7).`);
-      if (d.churchLife >= 14) prayers.push(`Pray for pastors and church leaders facing extreme restrictions on worship and church activities.`);
-      if (d.privatLife >= 14) prayers.push(`Pray for secret believers who cannot openly practice their faith even in their own homes.`);
-      if (d.familyLife >= 14) prayers.push(`Pray for converts who face rejection, abuse, or death from their own families.`);
-      prayers.push(`Pray for wisdom and courage for local church leaders and missionaries serving in this region.`);
+      prayers.push(`${t("prayEstimated")} ${d.christianPop} ${t("prayChristiansIn")} ${d.country} ${t("prayFacing")} ${levelLabel(d.level).toLowerCase()} ${t("prayPersecution")}`);
+      if (d.persecutionType.includes("Islamic")) prayers.push(t("prayIslamic"));
+      if (d.persecutionType.includes("Communist")) prayers.push(t("prayCommunist"));
+      if (d.persecutionType.includes("nationalism") || d.persecutionType.includes("Nationalist")) prayers.push(t("prayNationalism"));
+      if (d.violence >= 14) prayers.push(`${t("prayViolence")} (${d.violence?.toFixed(1)}/16.7).`);
+      if (d.churchLife >= 14) prayers.push(t("prayChurch"));
+      if (d.privatLife >= 14) prayers.push(t("praySecret"));
+      if (d.familyLife >= 14) prayers.push(t("prayFamily"));
+      prayers.push(t("prayWisdom"));
 
-      // Letter-writing / direct action extras
       const letterWriting = d.vom ? `<a class="action-card" href="https://www.prisoneralert.com/" target="_blank" rel="noopener">
         <div class="action-icon" style="background:#ef444422;color:#ef4444">&#9993;</div>
-        <div><div class="ac-name">Write to a Prisoner</div><div class="ac-desc">Send a letter of encouragement via VOM's Prisoner Alert</div></div>
+        <div><div class="ac-name">${t("writePrisoner")}</div><div class="ac-desc">${t("writePrisonerDesc")}</div></div>
       </a>` : '';
 
-      // Missionary note for HeartCry countries
       const missionaryNote = d.heartcry ? `<div class="missionary-note">
-        <strong>HeartCry Missionaries Active</strong> — HeartCry Missionary Society supports indigenous missionaries in ${d.region}. These are local believers trained to share the gospel in their own culture and language. Your support helps sustain their ministry, training, and families.
+        <strong>${t("heartcryActive")}</strong> — ${t("heartcryDesc")} ${d.region}. ${t("heartcryDesc2")}
       </div>` : '';
 
-      el.innerHTML = `
+      const badgeText = d.rank ? `#${d.rank}` : t("unranked");
+
+      return `
         <button class="back-btn" onclick="window.backToGlobal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-          Back to Global View
+          ${t("backToGlobal")}
         </button>
         <div class="detail-head">
           <h2>${d.country}</h2>
           <div class="badge" style="background:${lc}22;color:${lc};border:1px solid ${lc}55;">
-            ${d.rank ? `#${d.rank}` : 'Unranked'} &mdash; ${d.level} Persecution
+            ${badgeText} &mdash; ${levelLabel(d.level)} ${t("persecution")}
           </div>
         </div>
         ${d.score ? `
@@ -685,34 +1145,34 @@
               stroke-dasharray="${circ}" stroke-dashoffset="${off}"
               transform="rotate(-90 55 55)" stroke-linecap="round"/>
             <text x="55" y="52" text-anchor="middle" class="num">${d.score}</text>
-            <text x="55" y="68" text-anchor="middle" class="lbl">out of 100</text>
+            <text x="55" y="68" text-anchor="middle" class="lbl">${t("outOf100")}</text>
           </svg>
         </div>
         <div class="bars">
           ${subs.map(s => `<div class="bar-row">
-            <span class="bar-label">${s.l}</span>
+            <span class="bar-label">${t(s.key)}</span>
             <div class="bar-track"><div class="bar-fill" style="width:${(s.v/16.7*100).toFixed(1)}%;background:${lc}"></div></div>
             <span class="bar-val" style="color:${lc}">${s.v?.toFixed(1) || '-'}</span>
           </div>`).join('')}
         </div>` : ''}
         <div class="d-section">
-          <h4>Overview</h4>
+          <h4>${t("overview")}</h4>
           <div class="info-table">
-            <div class="row"><span class="lbl">Region</span><span class="val">${d.region}</span></div>
-            <div class="row"><span class="lbl">Main Religion</span><span class="val">${d.mainReligion}</span></div>
-            <div class="row"><span class="lbl">Christian Pop.</span><span class="val">${d.christianPop}</span></div>
-            <div class="row"><span class="lbl">Persecution Type</span><span class="val">${d.persecutionType}</span></div>
+            <div class="row"><span class="lbl">${t("region")}</span><span class="val">${d.region}</span></div>
+            <div class="row"><span class="lbl">${t("mainReligion")}</span><span class="val">${d.mainReligion}</span></div>
+            <div class="row"><span class="lbl">${t("christianPop")}</span><span class="val">${d.christianPop}</span></div>
+            <div class="row"><span class="lbl">${t("persecutionType")}</span><span class="val">${d.persecutionType}</span></div>
           </div>
         </div>
-        <div class="d-section"><h4>Summary</h4><p>${d.summary}</p></div>
-        ${d.keyFacts?.length ? `<div class="d-section"><h4>Key Facts</h4><ul>${d.keyFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
-        <div class="d-section"><h4>Sources</h4><div class="src-tags">${tags.join('')}</div></div>
+        <div class="d-section"><h4>${t("summary")}</h4><p>${d.summary}</p></div>
+        ${d.keyFacts?.length ? `<div class="d-section"><h4>${t("keyFacts")}</h4><ul>${d.keyFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
+        <div class="d-section"><h4>${t("sources")}</h4><div class="src-tags">${tags.join('')}</div></div>
         <div class="d-section">
-          <h4>Pray for ${d.country}</h4>
+          <h4>${t("prayFor")} ${d.country}</h4>
           <div class="prayer-box">
             <div class="prayer-header">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              Prayer Points
+              ${t("prayerPoints")}
             </div>
             <ul class="prayer-list">
               ${prayers.map(p => `<li>${p}</li>`).join('')}
@@ -721,7 +1181,7 @@
           </div>
         </div>
         <div class="d-section">
-          <h4>Take Action</h4>
+          <h4>${t("takeAction")}</h4>
           <div class="action-cards">
             ${actions.map(a => `<a class="action-card" href="${a.url}" target="_blank" rel="noopener">
               <div class="action-icon" style="background:${a.bg}22;color:${a.bg}">${a.icon}</div>
@@ -730,20 +1190,37 @@
             ${letterWriting}
           </div>
         </div>`;
-    };
+    }
 
+    // ── Map Click Handler ───────────────────────────────────────────────
     view.on("click", async (e) => {
       const r = await view.hitTest(e);
       const hit = r.results.find(x => x.graphic?.layer === persecutionLayer);
       if (hit) window.showDetail(hit.graphic.attributes.country);
     });
 
-    document.getElementById("aboutBtn").addEventListener("click", () => {
-      document.getElementById("aboutDialog").open = true;
+    // ── About Dialog ────────────────────────────────────────────────────
+    function renderAboutSources() {
       document.getElementById("sourcesList").innerHTML = GLOBAL_STATS.sources.map(s => `
-        <div class="src-entry"><div class="sn">${s.name}</div><div class="sm">${s.countries} countries | ${s.type}</div>
+        <div class="src-entry"><div class="sn">${s.name}</div><div class="sm">${s.countries} ${t("countries").toLowerCase()} | ${s.type}</div>
         <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a></div>`).join('');
+    }
+
+    window.openAbout = function() {
+      renderAboutSources();
+      document.getElementById("aboutModal").classList.add("open");
+    };
+    window.closeAbout = function() {
+      document.getElementById("aboutModal").classList.remove("open");
+    };
+
+    // Close modal on overlay click
+    document.getElementById("aboutModal").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) window.closeAbout();
     });
+
+    // ── Initial i18n update ─────────────────────────────────────────────
+    updateStaticI18n();
   </script>
 </body>
 </html>
