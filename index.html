@@ -183,7 +183,7 @@
     .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
     .bar-label { font-size: 11px; width: 85px; flex-shrink: 0; color: var(--text2); }
     .bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.15s ease; }
     .bar-val { font-size: 11px; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
 
     .d-section { margin-bottom: 14px; }
@@ -651,7 +651,7 @@
       <!-- MAP -->
       <div class="map-container">
         <div id="viewDiv">
-          <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="4" popup-component-enabled>
+          <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="4">
             <arcgis-zoom slot="top-left"></arcgis-zoom>
           </arcgis-map>
         </div>
@@ -1124,6 +1124,39 @@
     const activeLevels = new Set(["Extreme", "Very High", "High", "Moderate"]);
     let allActive = true;
     let currentDetailCountry = null;
+    let cachedExtent = null;
+
+    // Pre-index data for O(1) lookups
+    const DATA_MAP = new Map(PERSECUTION_DATA.map(d => [d.country, d]));
+
+    // Slug overrides (moved outside buildDetailHTML for perf)
+    const SLUG_OVERRIDES = {
+      "Democratic Republic of Congo": { od: "drc", vom: "drc", uscirf: "democratic-republic-of-congo" },
+      "Myanmar": { od: "myanmar", vom: "myanmar%20(burma)", uscirf: "burma" },
+      "Turkey": { od: "turkiye", vom: "turkey", uscirf: "turkey" },
+      "United Arab Emirates": { od: null, vom: "united-arab-emirates", uscirf: null },
+      "Tanzania": { od: null, vom: "tanzania", uscirf: null },
+      "Uganda": { od: null, vom: "uganda", uscirf: null },
+      "Philippines": { od: null, vom: "philippines", uscirf: null },
+      "Israel": { od: null, vom: "israel", uscirf: null },
+      "Lebanon": { od: null, vom: "lebanon", uscirf: null },
+      "Kuwait": { od: null, vom: "kuwait", uscirf: null },
+      "Bahrain": { od: null, vom: "bahrain", uscirf: null },
+      "Djibouti": { od: null, vom: "djibouti", uscirf: null },
+      "Azerbaijan": { od: null },
+      "Indonesia": { od: null },
+      "Kenya": { od: null },
+      "Malaysia": { od: null },
+      "Russia": { od: null },
+      "Sri Lanka": { od: null },
+      "Vietnam": { od: null },
+    };
+    const HEARTCRY_REGION = {
+      "Eastern Asia": "asia", "South Asia": "asia", "Southeast Asia": "asia", "Central Asia": "asia", "Western Asia": "middle-east",
+      "Eastern Africa": "africa", "Western Africa": "africa", "Northern Africa": "africa", "Southern Africa": "africa", "Central Africa": "africa",
+      "Central America": "latin-america", "South America": "latin-america", "Caribbean": "latin-america",
+      "Eastern Europe": "europe", "Western Europe": "europe", "Southern Europe": "europe",
+    };
 
     const graphics = PERSECUTION_DATA.map((d, i) => new Graphic({
       geometry: new Point({ longitude: d.lng, latitude: d.lat }),
@@ -1164,29 +1197,7 @@
           symbol: { type: "simple-marker", color, size: SIZES[level], outline: { color: [255,255,255,0.5], width: 1.5 } },
         })),
       }),
-      popupTemplate: {
-        title: "{country}", outFields: ["*"],
-        content: (feature) => {
-          const a = feature.graphic.attributes;
-          const lc = HEX[a.level] || "#6b7280";
-          let src = [];
-          if (a.uscirf !== "None") src.push(`USCIRF: ${a.uscirf}`);
-          if (a.acn !== "None") src.push(`ACN: ${a.acn}`);
-          if (a.vom !== "None") src.push(`VOM: ${a.vom}`);
-          if (a.icc === "Yes") src.push("ICC");
-          if (a.heartcry === "Yes") src.push("HeartCry");
-          const div = document.createElement("div");
-          div.classList.add("popup-c");
-          div.innerHTML = `
-            <span class="popup-lvl" style="background:${lc}">${levelLabel(a.level)} ${t("persecution")}</span>
-            ${a.rank < 999 ? `<div><span class="popup-sc">${a.score}</span><span class="popup-mx">/100</span> <span style="font-size:11px;color:#6b7280">(#${a.rank})</span></div>` : ''}
-            <div style="margin-top:6px;font-size:11px;color:#6b7280"><strong>${t("region")}:</strong> ${a.region} | <strong>${t("persecutionType")}:</strong> ${a.persecutionType}</div>
-            <p class="popup-sm">${a.summary}</p>
-            ${src.length ? `<div class="popup-tags">${src.map(s => `<span class="popup-tag">${s}</span>`).join('')}</div>` : ''}
-            <button class="popup-btn" onclick="window.showDetail('${a.country.replace(/'/g, "\\'")}')">${t("fullDetails")}</button>`;
-          return div;
-        },
-      },
+      popupEnabled: false,
       labelingInfo: [{
         labelExpressionInfo: { expression: "$feature.country" },
         symbol: { type: "text", color: [255,255,255,0.85], haloColor: [0,0,0,0.7], haloSize: 1.5, font: { size: 10, weight: "bold", family: "Inter" } },
@@ -1195,11 +1206,12 @@
     });
     map.add(persecutionLayer);
 
-    // Fit map to show all data points on load
+    // Fit map to show all data points on load & cache extent
     persecutionLayer.when(() => {
       persecutionLayer.queryExtent().then(result => {
         if (result.extent) {
-          view.goTo(result.extent.expand(1.2), { duration: 0 });
+          cachedExtent = result.extent.expand(1.2);
+          view.goTo(cachedExtent, { duration: 0 });
         }
       });
     });
@@ -1266,19 +1278,25 @@
 
     // ── Country Selection ───────────────────────────────────────────────
     window.selectCountry = function (name) {
-      const d = PERSECUTION_DATA.find(x => x.country === name);
+      const d = DATA_MAP.get(name);
       if (!d) return;
-      view.goTo({ center: [d.lng, d.lat], zoom: 5 }, { duration: 800 });
+      view.goTo({ center: [d.lng, d.lat], zoom: 5 }, { duration: 300, easing: "ease-out" });
       window.showDetail(name);
-      // On mobile, switch to detail tab
       if (isMobile()) window.switchTab("detail");
     };
 
     window.backToGlobal = function () {
       currentDetailCountry = null;
-      persecutionLayer.queryExtent().then(result => {
-        if (result.extent) view.goTo(result.extent.expand(1.5), { duration: 800 });
-      });
+      if (cachedExtent) {
+        view.goTo(cachedExtent, { duration: 300, easing: "ease-out" });
+      } else {
+        persecutionLayer.queryExtent().then(result => {
+          if (result.extent) {
+            cachedExtent = result.extent.expand(1.2);
+            view.goTo(cachedExtent, { duration: 300, easing: "ease-out" });
+          }
+        });
+      }
       // Desktop
       document.getElementById("detailContentDesktop").style.display = "none";
       document.getElementById("detailPlaceholderDesktop").style.display = "flex";
@@ -1290,10 +1308,9 @@
 
     // ── Show Detail ─────────────────────────────────────────────────────
     window.showDetail = function (name) {
-      const d = PERSECUTION_DATA.find(x => x.country === name);
+      const d = DATA_MAP.get(name);
       if (!d) return;
       currentDetailCountry = name;
-      try { view.closePopup(); } catch(e) {}
 
       const html = buildDetailHTML(d);
 
@@ -1336,40 +1353,11 @@
       if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
       tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
-      // Slug overrides
-      const SLUG_OVERRIDES = {
-        "Democratic Republic of Congo": { od: "drc", vom: "drc", uscirf: "democratic-republic-of-congo" },
-        "Myanmar": { od: "myanmar", vom: "myanmar%20(burma)", uscirf: "burma" },
-        "Turkey": { od: "turkiye", vom: "turkey", uscirf: "turkey" },
-        "United Arab Emirates": { od: null, vom: "united-arab-emirates", uscirf: null },
-        "Tanzania": { od: null, vom: "tanzania", uscirf: null },
-        "Uganda": { od: null, vom: "uganda", uscirf: null },
-        "Philippines": { od: null, vom: "philippines", uscirf: null },
-        "Israel": { od: null, vom: "israel", uscirf: null },
-        "Lebanon": { od: null, vom: "lebanon", uscirf: null },
-        "Kuwait": { od: null, vom: "kuwait", uscirf: null },
-        "Bahrain": { od: null, vom: "bahrain", uscirf: null },
-        "Djibouti": { od: null, vom: "djibouti", uscirf: null },
-        "Azerbaijan": { od: null },
-        "Indonesia": { od: null },
-        "Kenya": { od: null },
-        "Malaysia": { od: null },
-        "Russia": { od: null },
-        "Sri Lanka": { od: null },
-        "Vietnam": { od: null },
-      };
       const defaultSlug = d.country.toLowerCase().replace(/\s+/g, '-');
       const overrides = SLUG_OVERRIDES[d.country] || {};
       const odSlug = overrides.od !== undefined ? overrides.od : (d.rank && d.rank <= 50 ? defaultSlug : null);
       const vomSlug = overrides.vom !== undefined ? overrides.vom : defaultSlug;
       const uscirfSlug = overrides.uscirf !== undefined ? overrides.uscirf : defaultSlug;
-
-      const heartcryRegion = {
-        "Eastern Asia": "asia", "South Asia": "asia", "Southeast Asia": "asia", "Central Asia": "asia", "Western Asia": "middle-east",
-        "Eastern Africa": "africa", "Western Africa": "africa", "Northern Africa": "africa", "Southern Africa": "africa", "Central Africa": "africa",
-        "Central America": "latin-america", "South America": "latin-america", "Caribbean": "latin-america",
-        "Eastern Europe": "europe", "Western Europe": "europe", "Southern Europe": "europe",
-      };
 
       // Build action links
       const actions = [];
@@ -1400,7 +1388,7 @@
       });
       if (d.heartcry) actions.push({
         name: "HeartCry Missionary Society", desc: `${t("heartcryMissDesc")} ${d.region}`,
-        url: `https://heartcrymissionary.com/the-field/${heartcryRegion[d.region] || 'asia'}/`,
+        url: `https://heartcrymissionary.com/the-field/${HEARTCRY_REGION[d.region] || 'asia'}/`,
         bg: "#22c55e", icon: "&#9992;"
       });
 
@@ -1497,7 +1485,7 @@
     view.on("click", async (e) => {
       const r = await view.hitTest(e);
       const hit = r.results.find(x => x.graphic?.layer === persecutionLayer);
-      if (hit) window.showDetail(hit.graphic.attributes.country);
+      if (hit) window.selectCountry(hit.graphic.attributes.country);
     });
 
     // ── About Dialog ────────────────────────────────────────────────────
