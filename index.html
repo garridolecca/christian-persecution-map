@@ -86,6 +86,7 @@
     }
     .legend-pill:hover { background: rgba(255,255,255,0.07); }
     .legend-pill.inactive { opacity: 0.25; }
+    .legend-pill.active { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.1); color: var(--text); }
     .legend-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
     /* Search */
@@ -242,6 +243,7 @@
         </div>
         <!-- Legend -->
         <div class="legend-row">
+          <div class="legend-pill active" data-level="All" onclick="toggleLevel('All')"><span>All</span></div>
           <div class="legend-pill" data-level="Extreme" onclick="toggleLevel('Extreme')"><span class="dot" style="background:var(--extreme)"></span><span>Extreme <b id="count-Extreme">0</b></span></div>
           <div class="legend-pill" data-level="Very High" onclick="toggleLevel('Very High')"><span class="dot" style="background:var(--very-high)"></span><span>High+ <b id="count-Very High">0</b></span></div>
           <div class="legend-pill" data-level="High" onclick="toggleLevel('High')"><span class="dot" style="background:var(--high)"></span><span>High <b id="count-High">0</b></span></div>
@@ -394,7 +396,8 @@
       const list = document.getElementById("countryList");
       const f = filter.toLowerCase();
       const filtered = PERSECUTION_DATA.filter(d =>
-        d.country.toLowerCase().includes(f) || d.region.toLowerCase().includes(f)
+        (d.country.toLowerCase().includes(f) || d.region.toLowerCase().includes(f)) &&
+        activeLevels.has(d.level)
       ).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
       list.innerHTML = filtered.map(d => {
@@ -410,13 +413,49 @@
 
     window.filterCountries = function () { buildCountryList(document.getElementById("searchInput").value); };
 
+    let allActive = true; // tracks whether "All" is the current mode
+
+    function updatePillStyles() {
+      document.querySelectorAll(".legend-pill").forEach(pill => {
+        const lvl = pill.dataset.level;
+        if (allActive) {
+          pill.classList.remove("inactive");
+          pill.classList.toggle("active", lvl === "All");
+        } else {
+          if (lvl === "All") {
+            pill.classList.remove("active");
+            pill.classList.remove("inactive");
+          } else {
+            pill.classList.toggle("active", activeLevels.has(lvl));
+            pill.classList.toggle("inactive", !activeLevels.has(lvl));
+          }
+        }
+      });
+    }
+
+    function applyLevelFilter() {
+      if (allActive || activeLevels.size === 4) {
+        persecutionLayer.definitionExpression = null;
+      } else if (activeLevels.size === 0) {
+        persecutionLayer.definitionExpression = "1=0";
+      } else {
+        persecutionLayer.definitionExpression = `level IN (${[...activeLevels].map(l => `'${l}'`).join(",")})`;
+      }
+      updatePillStyles();
+      buildCountryList(document.getElementById("searchInput").value);
+    }
+
     window.toggleLevel = function (level) {
-      const pill = document.querySelector(`.legend-pill[data-level="${level}"]`);
-      if (activeLevels.has(level)) { activeLevels.delete(level); pill.classList.add("inactive"); }
-      else { activeLevels.add(level); pill.classList.remove("inactive"); }
-      if (activeLevels.size === 4) persecutionLayer.definitionExpression = null;
-      else if (activeLevels.size === 0) persecutionLayer.definitionExpression = "1=0";
-      else persecutionLayer.definitionExpression = `level IN (${[...activeLevels].map(l => `'${l}'`).join(",")})`;
+      if (level === "All") {
+        allActive = true;
+        activeLevels.clear();
+        ["Extreme", "Very High", "High", "Moderate"].forEach(l => activeLevels.add(l));
+      } else {
+        allActive = false;
+        activeLevels.clear();
+        activeLevels.add(level);
+      }
+      applyLevelFilter();
     };
 
     window.selectCountry = function (name) {
