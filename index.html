@@ -4,748 +4,259 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Global Christian Persecution Map</title>
-
-  <!-- ArcGIS Maps SDK for JavaScript 5.0 (unified: Core + Calcite + Components) -->
   <script type="module" src="https://js.arcgis.com/5.0/"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --brand-primary: #b91c1c;
-      --brand-dark: #7f1d1d;
-      --brand-light: #fecaca;
-      --extreme: #ff1744;
-      --very-high: #ff9100;
-      --high: #ffea00;
-      --moderate: #69f0ae;
-      --low: #22c55e;
-      --bg-dark: #111827;
-      --bg-panel: #1f2937;
-      --text-primary: #f9fafb;
-      --text-secondary: #9ca3af;
-      --text-muted: #6b7280;
-      --border: #374151;
+      --extreme: #ef4444;
+      --very-high: #f59e0b;
+      --high: #3b82f6;
+      --moderate: #22c55e;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --text: #f1f5f9;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --border: #334155;
+      --accent: #ef4444;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
 
-    html, body {
-      height: 100%;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      overflow: hidden;
-    }
+    /* Shell */
+    calcite-shell { --calcite-color-brand: var(--accent); --calcite-font-family: 'Inter', system-ui, sans-serif; }
+    calcite-navigation { --calcite-color-foreground-1: var(--bg); --calcite-color-text-1: var(--text); }
+    calcite-shell-panel { --calcite-shell-panel-width: 340px; --calcite-color-foreground-1: var(--surface); }
+    calcite-shell-panel[slot="panel-end"] { --calcite-shell-panel-width: 380px; }
+    calcite-panel { --calcite-color-foreground-1: var(--surface); --calcite-color-text-1: var(--text); --calcite-color-text-2: var(--text2); }
 
-    /* ── CALCITE OVERRIDES ──────────────────────────────────── */
-    calcite-shell {
-      --calcite-color-brand: var(--brand-primary);
-      --calcite-font-family: 'Inter', system-ui, sans-serif;
-    }
-
-    calcite-navigation {
-      --calcite-color-foreground-1: var(--bg-dark);
-      --calcite-color-text-1: var(--text-primary);
-    }
-
-    calcite-shell-panel {
-      --calcite-shell-panel-width: 360px;
-      --calcite-color-foreground-1: var(--bg-panel);
-    }
-
-    /* ── LEFT PANEL TAB LAYOUT ─────────────────────────────── */
-    .left-panel-wrapper {
+    /* ── LEFT PANEL ─────────────────────────────────────────── */
+    .sidebar {
       display: flex;
       flex-direction: column;
       height: 100%;
       overflow: hidden;
+      background: var(--surface);
     }
 
-    .left-panel-wrapper calcite-tabs {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .left-panel-wrapper calcite-tab-nav {
-      flex-shrink: 0;
-    }
-
-    .left-panel-wrapper calcite-tab {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .tab-content-dashboard {
-      padding: 8px;
-      overflow: hidden;
-    }
-
-    .tab-content-countries {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    calcite-panel {
-      --calcite-color-foreground-1: var(--bg-panel);
-      --calcite-color-text-1: var(--text-primary);
-      --calcite-color-text-2: var(--text-secondary);
-    }
-
-    calcite-tabs {
-      --calcite-color-foreground-1: var(--bg-panel);
-      --calcite-color-text-1: var(--text-primary);
-      --calcite-color-text-2: var(--text-secondary);
-    }
-
-    calcite-tab-title {
-      --calcite-color-text-1: var(--text-primary);
-      --calcite-color-text-3: var(--text-muted);
-    }
-
-    /* ── HEADER ────────────────────────────────────────────── */
-    .nav-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 16px;
-    }
-
-    .nav-title .cross-icon {
-      font-size: 28px;
-      color: var(--brand-primary);
-      font-weight: 700;
-    }
-
-    .nav-title h1 {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-    }
-
-    .nav-title .subtitle {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
-
-    /* ── STATS GRID ────────────────────────────────────────── */
-    .stats-grid {
+    /* Stats strip */
+    .stats-strip {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      padding: 8px;
+      gap: 1px;
+      background: var(--border);
+      flex-shrink: 0;
     }
-
-    .stat-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 4px;
+    .stat {
+      background: var(--surface);
+      padding: 10px 6px;
       text-align: center;
     }
+    .stat .n { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .stat .n.red { color: var(--accent); }
+    .stat .t { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
 
-    .stat-card .value {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--brand-primary);
-      line-height: 1.2;
-    }
-
-    .stat-card .label {
-      font-size: 9px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 1px;
-    }
-
-    /* ── LEGEND ─────────────────────────────────────────────── */
-    .legend-items {
+    /* Legend row */
+    .legend-row {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 6px 8px;
+      gap: 4px;
+      padding: 10px 12px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
     }
-
-    .legend-item {
+    .legend-pill {
+      flex: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      cursor: pointer;
-      padding: 4px 8px;
+      justify-content: center;
+      gap: 5px;
+      padding: 5px 4px;
       border-radius: 6px;
-      transition: background 0.15s;
-    }
-
-    .legend-item:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .legend-item.inactive {
-      opacity: 0.35;
-    }
-
-    .legend-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .legend-label {
-      flex: 1;
-      font-weight: 500;
-    }
-
-    .legend-count {
-      font-size: 12px;
-      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 10px;
       font-weight: 600;
+      color: var(--text2);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+      user-select: none;
     }
+    .legend-pill:hover { background: rgba(255,255,255,0.07); }
+    .legend-pill.inactive { opacity: 0.25; }
+    .legend-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ── SEARCH ─────────────────────────────────────────────── */
-    .search-box {
-      padding: 6px 8px;
+    /* Search */
+    .search-wrap {
+      padding: 10px 12px;
+      flex-shrink: 0;
     }
-
-    .search-input {
+    .search-wrap input {
       width: 100%;
       padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      color: var(--text-primary);
+      color: var(--text);
       font-size: 13px;
       font-family: inherit;
       outline: none;
       transition: border-color 0.2s;
     }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap input::placeholder { color: var(--text3); }
 
-    .search-input:focus {
-      border-color: var(--brand-primary);
-    }
-
-    .search-input::placeholder {
-      color: var(--text-muted);
-    }
-
-    /* ── COUNTRY LIST ──────────────────────────────────────── */
+    /* Country list */
     .country-list {
-      padding: 0 8px 8px;
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
-      flex: 1;
-      min-height: 0;
+      padding: 0 6px 6px;
     }
+    .country-list::-webkit-scrollbar { width: 4px; }
+    .country-list::-webkit-scrollbar-track { background: transparent; }
+    .country-list::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
 
-    .country-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .country-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .country-list::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
-
-    .country-item {
+    .c-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 5px 8px;
-      border-radius: 6px;
+      gap: 10px;
+      padding: 7px 8px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.15s;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.12s;
+    }
+    .c-item:hover { background: rgba(255,255,255,0.05); }
+    .c-item + .c-item { border-top: 1px solid rgba(255,255,255,0.03); }
+    .c-rank {
+      width: 26px; height: 26px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: white; flex-shrink: 0;
+    }
+    .c-info { flex: 1; min-width: 0; }
+    .c-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .c-region { font-size: 10px; color: var(--text3); margin-top: 1px; }
+    .c-score { font-size: 15px; font-weight: 800; min-width: 30px; text-align: right; }
+
+    /* ── RIGHT PANEL / DETAIL ──────────────────────────────── */
+    .detail-empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; text-align: center; padding: 40px; color: var(--text3);
+    }
+    .detail-empty svg { width: 48px; height: 48px; opacity: 0.25; margin-bottom: 16px; }
+    .detail-empty p { font-size: 13px; line-height: 1.7; max-width: 240px; }
+
+    .detail { padding: 20px; }
+    .detail-head { text-align: center; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .detail-head h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .detail-head .badge {
+      display: inline-block; margin-top: 6px; padding: 3px 14px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
     }
 
-    .country-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+    .score-ring { display: flex; justify-content: center; margin: 12px 0 16px; }
+    .score-ring svg { width: 110px; height: 110px; }
+    .score-ring .num { font-size: 30px; font-weight: 800; fill: var(--text); }
+    .score-ring .lbl { font-size: 9px; fill: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .bars { margin-bottom: 18px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .bar-label { font-size: 11px; width: 85px; flex-shrink: 0; color: var(--text2); }
+    .bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .bar-val { font-size: 11px; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
+
+    .d-section { margin-bottom: 14px; }
+    .d-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 6px; font-weight: 700; }
+    .d-section p { font-size: 12.5px; line-height: 1.7; color: var(--text2); }
+    .d-section ul { list-style: none; }
+    .d-section li { font-size: 12px; line-height: 1.5; color: var(--text2); padding: 3px 0 3px 14px; position: relative; }
+    .d-section li::before { content: ''; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; position: absolute; left: 0; top: 10px; }
+
+    .info-table { width: 100%; }
+    .info-table .row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .info-table .lbl { font-size: 11px; color: var(--text3); }
+    .info-table .val { font-size: 11px; font-weight: 600; color: var(--text); text-align: right; max-width: 55%; }
+
+    .src-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .src-tag {
+      font-size: 9px; padding: 3px 7px; border-radius: 4px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.03em;
     }
+    .src-tag.cpc { background: #991b1b40; color: #fca5a5; border: 1px solid #991b1b80; }
+    .src-tag.swl { background: #92400e40; color: #fde68a; border: 1px solid #92400e80; }
+    .src-tag.acn { background: #1e40af40; color: #93c5fd; border: 1px solid #1e40af80; }
+    .src-tag.vom { background: #6b21a840; color: #c4b5fd; border: 1px solid #6b21a880; }
+    .src-tag.icc { background: #9a340040; color: #fdba74; border: 1px solid #9a340080; }
+    .src-tag.hc  { background: #16653440; color: #86efac; border: 1px solid #16653480; }
+    .src-tag.od  { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border); }
 
-    .country-item .rank {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      flex-shrink: 0;
-      color: white;
-    }
+    /* ── POPUP ──────────────────────────────────────────────── */
+    .popup-c { font-family: 'Inter', sans-serif; padding: 6px 0; }
+    .popup-lvl { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: white; margin-bottom: 6px; }
+    .popup-sc { font-size: 24px; font-weight: 800; }
+    .popup-mx { font-size: 12px; color: #6b7280; }
+    .popup-sm { font-size: 11px; line-height: 1.6; color: #4b5563; margin-top: 6px; }
+    .popup-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
+    .popup-tag { font-size: 8px; padding: 2px 5px; border-radius: 3px; font-weight: 600; background: #f3f4f6; color: #374151; }
+    .popup-btn { display: inline-block; margin-top: 8px; padding: 5px 14px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
 
-    .country-item .info {
-      flex: 1;
-      min-width: 0;
-    }
+    /* ── SOURCES DIALOG ─────────────────────────────────────── */
+    .src-list { padding: 0; }
+    .src-entry { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .src-entry .sn { font-size: 13px; font-weight: 600; }
+    .src-entry .sm { font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .src-entry a { color: var(--accent); text-decoration: none; font-size: 10px; }
+    .src-entry a:hover { text-decoration: underline; }
 
-    .country-item .name {
-      font-size: 13px;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    #viewDiv { flex: 1; min-height: 0; }
+    arcgis-map { width: 100%; height: 100%; }
 
-    .country-item .region {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .country-item .score-badge {
-      font-size: 14px;
-      font-weight: 700;
-      min-width: 36px;
-      text-align: right;
-    }
-
-    /* ── DETAIL PANEL (panel-end) ──────────────────────────── */
-    .detail-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      padding: 32px;
-      color: var(--text-muted);
-    }
-
-    .detail-placeholder .icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.4;
-    }
-
-    .detail-placeholder p {
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .detail-content {
-      padding: 16px;
-    }
-
-    .detail-header {
-      text-align: center;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
-    }
-
-    .detail-header .country-name {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .detail-header .rank-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .detail-score-ring {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 16px auto;
-    }
-
-    .detail-score-ring svg {
-      width: 120px;
-      height: 120px;
-    }
-
-    .detail-score-ring .score-text {
-      font-size: 32px;
-      font-weight: 700;
-      fill: var(--text-primary);
-    }
-
-    .detail-score-ring .score-label {
-      font-size: 10px;
-      fill: var(--text-secondary);
-      text-transform: uppercase;
-    }
-
-    /* Sub-scores bars */
-    .sub-scores {
-      margin: 16px 0;
-    }
-
-    .sub-score-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .sub-score-label {
-      font-size: 11px;
-      width: 100px;
-      flex-shrink: 0;
-      color: var(--text-secondary);
-    }
-
-    .sub-score-bar-bg {
-      flex: 1;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .sub-score-bar {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-
-    .sub-score-value {
-      font-size: 11px;
-      font-weight: 600;
-      width: 36px;
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    /* Detail sections */
-    .detail-section {
-      margin-bottom: 16px;
-    }
-
-    .detail-section h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .detail-section p {
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--text-secondary);
-    }
-
-    .detail-section ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .detail-section li {
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text-secondary);
-      padding: 4px 0 4px 16px;
-      position: relative;
-    }
-
-    .detail-section li::before {
-      content: '';
-      width: 4px;
-      height: 4px;
-      background: var(--brand-primary);
-      border-radius: 50%;
-      position: absolute;
-      left: 0;
-      top: 11px;
-    }
-
-    /* Source badges */
-    .source-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .source-badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-
-    .source-badge.uscirf-cpc { background: rgba(153, 27, 27, 0.3); color: #fca5a5; border: 1px solid rgba(153, 27, 27, 0.5); }
-    .source-badge.uscirf-swl { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4); }
-    .source-badge.acn { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .source-badge.vom { background: rgba(168, 85, 247, 0.2); color: #c4b5fd; border: 1px solid rgba(168, 85, 247, 0.4); }
-    .source-badge.icc { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.4); }
-    .source-badge.heartcry { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
-
-    /* Info row */
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-
-    .info-row .label {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .info-row .value {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    /* ── MAP ────────────────────────────────────────────────── */
-    #viewDiv {
-      flex: 1;
-      min-height: 0;
-    }
-
-    arcgis-map {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* ── POPUP CUSTOM STYLES ───────────────────────────────── */
-    .popup-content {
-      font-family: 'Inter', sans-serif;
-      padding: 8px 0;
-    }
-
-    .popup-level {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .popup-score {
-      font-size: 28px;
-      font-weight: 700;
-      margin-right: 6px;
-    }
-
-    .popup-max {
-      font-size: 14px;
-      color: #6b7280;
-    }
-
-    .popup-summary {
-      font-size: 12px;
-      line-height: 1.6;
-      color: #4b5563;
-      margin-top: 8px;
-    }
-
-    .popup-sources {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 8px;
-    }
-
-    .popup-source-tag {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-weight: 600;
-      background: #f3f4f6;
-      color: #374151;
-    }
-
-    .popup-btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 16px;
-      background: var(--brand-primary);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    /* ── SOURCES PANEL ─────────────────────────────────────── */
-    .sources-list {
-      padding: 12px;
-    }
-
-    .source-item {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-
-    .source-item .source-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .source-item .source-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .source-item a {
-      color: var(--brand-primary);
-      text-decoration: none;
-      font-size: 11px;
-      font-weight: 500;
-    }
-
-    .source-item a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── RESPONSIVE ────────────────────────────────────────── */
     @media (max-width: 768px) {
-      calcite-shell-panel {
-        --calcite-shell-panel-width: 320px;
-      }
+      calcite-shell-panel { --calcite-shell-panel-width: 300px; }
     }
   </style>
 </head>
 <body class="calcite-mode-dark">
-
   <calcite-shell>
-    <!-- ── HEADER ──────────────────────────────────────────── -->
+
+    <!-- HEADER -->
     <calcite-navigation slot="header">
-      <calcite-navigation-logo
-        slot="logo"
-        heading="Global Christian Persecution Map"
-        description="Data from 7 international monitoring organizations"
-        icon="map-pin"
-      ></calcite-navigation-logo>
-      <calcite-action
-        slot="content-end"
-        icon="information"
-        text="About & Sources"
-        id="aboutBtn"
-      ></calcite-action>
+      <calcite-navigation-logo slot="logo" heading="Global Christian Persecution Map" description="Data from 7 international monitoring organizations" icon="map-pin"></calcite-navigation-logo>
+      <calcite-action slot="content-end" icon="information" text="About & Sources" id="aboutBtn"></calcite-action>
     </calcite-navigation>
 
-    <!-- ── LEFT PANEL ──────────────────────────────────────── -->
+    <!-- LEFT PANEL -->
     <calcite-shell-panel slot="panel-start" position="start">
-      <calcite-panel heading="Dashboard">
-        <div class="left-panel-wrapper">
-          <calcite-tabs>
-            <calcite-tab-nav slot="title-group">
-              <calcite-tab-title selected icon-start="graph-bar">Dashboard</calcite-tab-title>
-              <calcite-tab-title icon-start="list">Countries</calcite-tab-title>
-            </calcite-tab-nav>
-
-            <!-- TAB 1: Dashboard (stats + legend) -->
-            <calcite-tab selected>
-              <div class="tab-content-dashboard">
-                <!-- Global Stats -->
-                <div class="stats-grid">
-                  <div class="stat-card">
-                    <div class="value">365M</div>
-                    <div class="label">Persecuted</div>
-                  </div>
-                  <div class="stat-card">
-                    <div class="value">4,998</div>
-                    <div class="label">Killed</div>
-                  </div>
-                  <div class="stat-card">
-                    <div class="value">14,766</div>
-                    <div class="label">Churches Hit</div>
-                  </div>
-                  <div class="stat-card">
-                    <div class="value">3,906</div>
-                    <div class="label">Detained</div>
-                  </div>
-                  <div class="stat-card">
-                    <div class="value">3,300</div>
-                    <div class="label">Abducted</div>
-                  </div>
-                  <div class="stat-card">
-                    <div class="value">78</div>
-                    <div class="label">Countries</div>
-                  </div>
-                </div>
-
-                <!-- Persecution Level Legend -->
-                <div style="margin-top: 12px;">
-                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; padding: 0 8px 6px;">Persecution Levels — click to filter</div>
-                  <div class="legend-items" id="legendContainer">
-                    <div class="legend-item" data-level="Extreme" onclick="toggleLevel('Extreme')">
-                      <div class="legend-dot" style="background: var(--extreme)"></div>
-                      <span class="legend-label">Extreme (81-100)</span>
-                      <span class="legend-count" id="count-Extreme">0</span>
-                    </div>
-                    <div class="legend-item" data-level="Very High" onclick="toggleLevel('Very High')">
-                      <div class="legend-dot" style="background: var(--very-high)"></div>
-                      <span class="legend-label">Very High (61-80)</span>
-                      <span class="legend-count" id="count-Very High">0</span>
-                    </div>
-                    <div class="legend-item" data-level="High" onclick="toggleLevel('High')">
-                      <div class="legend-dot" style="background: var(--high)"></div>
-                      <span class="legend-label">High (41-60)</span>
-                      <span class="legend-count" id="count-High">0</span>
-                    </div>
-                    <div class="legend-item" data-level="Moderate" onclick="toggleLevel('Moderate')">
-                      <div class="legend-dot" style="background: var(--moderate)"></div>
-                      <span class="legend-label">Moderate</span>
-                      <span class="legend-count" id="count-Moderate">0</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Reporting period note -->
-                <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid var(--border);">
-                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-                    Reporting period: Oct 2023 – Sep 2024<br>
-                    Primary source: Open Doors World Watch List 2025
-                  </div>
-                </div>
-              </div>
-            </calcite-tab>
-
-            <!-- TAB 2: Countries (search + list) -->
-            <calcite-tab>
-              <div class="tab-content-countries">
-                <div class="search-box">
-                  <input type="text" class="search-input" id="searchInput" placeholder="Search countries or regions..." oninput="filterCountries()" />
-                </div>
-                <div class="country-list" id="countryList"></div>
-              </div>
-            </calcite-tab>
-
-          </calcite-tabs>
+      <div class="sidebar">
+        <!-- Stats -->
+        <div class="stats-strip">
+          <div class="stat"><div class="n red">365M</div><div class="t">Persecuted</div></div>
+          <div class="stat"><div class="n red">4,998</div><div class="t">Killed</div></div>
+          <div class="stat"><div class="n">14,766</div><div class="t">Churches hit</div></div>
+          <div class="stat"><div class="n">3,906</div><div class="t">Detained</div></div>
+          <div class="stat"><div class="n">3,300</div><div class="t">Abducted</div></div>
+          <div class="stat"><div class="n">78</div><div class="t">Countries</div></div>
         </div>
-      </calcite-panel>
+        <!-- Legend -->
+        <div class="legend-row">
+          <div class="legend-pill" data-level="Extreme" onclick="toggleLevel('Extreme')"><span class="dot" style="background:var(--extreme)"></span><span>Extreme <b id="count-Extreme">0</b></span></div>
+          <div class="legend-pill" data-level="Very High" onclick="toggleLevel('Very High')"><span class="dot" style="background:var(--very-high)"></span><span>High+ <b id="count-Very High">0</b></span></div>
+          <div class="legend-pill" data-level="High" onclick="toggleLevel('High')"><span class="dot" style="background:var(--high)"></span><span>High <b id="count-High">0</b></span></div>
+          <div class="legend-pill" data-level="Moderate" onclick="toggleLevel('Moderate')"><span class="dot" style="background:var(--moderate)"></span><span>Med <b id="count-Moderate">0</b></span></div>
+        </div>
+        <!-- Search -->
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="Search countries or regions..." oninput="filterCountries()" />
+        </div>
+        <!-- Country list -->
+        <div class="country-list" id="countryList"></div>
+      </div>
     </calcite-shell-panel>
 
-    <!-- ── MAP ─────────────────────────────────────────────── -->
+    <!-- MAP -->
     <div id="viewDiv">
       <arcgis-map basemap="dark-gray-vector" center="25,20" zoom="2" popup-component-enabled>
         <arcgis-zoom slot="top-left"></arcgis-zoom>
@@ -753,443 +264,249 @@
       </arcgis-map>
     </div>
 
-    <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
+    <!-- RIGHT PANEL -->
     <calcite-shell-panel slot="panel-end" position="end" id="detailPanel">
-      <calcite-panel heading="Country Details" id="detailPanelContent">
-        <div class="detail-placeholder" id="detailPlaceholder">
-          <div class="icon">&#9769;</div>
-          <p>Select a country from the map or the list to view detailed persecution data from multiple international monitoring organizations.</p>
+      <calcite-panel heading="Country Details">
+        <div class="detail-empty" id="detailPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          <p>Click a country on the map or select one from the list to view detailed persecution data.</p>
         </div>
-        <div class="detail-content" id="detailContent" style="display:none;"></div>
+        <div class="detail" id="detailContent" style="display:none;"></div>
       </calcite-panel>
     </calcite-shell-panel>
 
   </calcite-shell>
 
-  <!-- ── ABOUT / SOURCES MODAL ──────────────────────────────── -->
+  <!-- ABOUT DIALOG -->
   <calcite-dialog id="aboutDialog" heading="About This Map" kind="brand" scale="l" width-scale="m">
-    <div style="padding: 16px; color: var(--text-secondary); font-size: 13px; line-height: 1.7;">
-      <p style="margin-bottom: 16px; color: var(--text-primary); font-size: 15px; font-weight: 500;">
+    <div style="padding: 16px; color: var(--text2); font-size: 13px; line-height: 1.7;">
+      <p style="margin-bottom: 16px; color: var(--text); font-size: 15px; font-weight: 500;">
         This interactive map visualizes the global landscape of Christian persecution using data compiled from seven major international monitoring organizations.
       </p>
-      <h3 style="color: var(--text-primary); font-size: 14px; margin-bottom: 12px; font-weight: 600;">Data Sources</h3>
-      <div class="sources-list" id="sourcesList"></div>
-      <h3 style="color: var(--text-primary); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Methodology</h3>
+      <h3 style="color: var(--text); font-size: 14px; margin-bottom: 12px; font-weight: 600;">Data Sources</h3>
+      <div class="src-list" id="sourcesList"></div>
+      <h3 style="color: var(--text); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Methodology</h3>
       <p>The primary ranking and scoring system is from the Open Doors World Watch List 2025, which evaluates persecution across six categories: Private Life, Family Life, Community Life, National Life, Church Life, and Violence. Each category is scored 0-16.7, for a maximum total of 100.</p>
       <p style="margin-top: 8px;">Additional designations from USCIRF, ACN, VOM, ICC, and HeartCry Missionary Society are overlaid to provide a comprehensive multi-source view.</p>
-      <h3 style="color: var(--text-primary); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Disclaimer</h3>
+      <h3 style="color: var(--text); font-size: 14px; margin: 16px 0 8px; font-weight: 600;">Disclaimer</h3>
       <p>This map is for educational and awareness purposes. Data reflects the most recently available reports from each organization. Conditions change rapidly and this map may not reflect the current situation in every country.</p>
     </div>
     <calcite-button slot="footer-end" kind="brand" appearance="solid" onclick="document.getElementById('aboutDialog').open = false;">Close</calcite-button>
   </calcite-dialog>
 
-  <!-- ── DATA ──────────────────────────────────────────────── -->
   <script src="data.js"></script>
-
-  <!-- ── APPLICATION LOGIC ─────────────────────────────────── -->
   <script type="module">
-    // ── Wait for map ────────────────────────────────────────
     const mapEl = document.querySelector("arcgis-map");
     await mapEl.viewOnReady();
     const view = mapEl.view;
     const map = mapEl.map;
 
-    // ── Import ArcGIS modules ──────────────────────────────
-    const [FeatureLayer, Graphic, Point, PopupTemplate, SimpleRenderer, UniqueValueRenderer] =
-      await $arcgis.import([
-        "@arcgis/core/layers/FeatureLayer.js",
-        "@arcgis/core/Graphic.js",
-        "@arcgis/core/geometry/Point.js",
-        "@arcgis/core/PopupTemplate.js",
-        "@arcgis/core/renderers/SimpleRenderer.js",
-        "@arcgis/core/renderers/UniqueValueRenderer.js",
-      ]);
+    const [FeatureLayer, Graphic, Point, UniqueValueRenderer] = await $arcgis.import([
+      "@arcgis/core/layers/FeatureLayer.js",
+      "@arcgis/core/Graphic.js",
+      "@arcgis/core/geometry/Point.js",
+      "@arcgis/core/renderers/UniqueValueRenderer.js",
+    ]);
 
-    // ── Color map ──────────────────────────────────────────
-    const COLORS = {
-      "Extreme": [255, 23, 68],
-      "Very High": [255, 145, 0],
-      "High": [255, 234, 0],
-      "Moderate": [105, 240, 174],
-    };
+    const COLORS = { "Extreme": [239,68,68], "Very High": [245,158,11], "High": [59,130,246], "Moderate": [34,197,94] };
+    const SIZES  = { "Extreme": 16, "Very High": 12, "High": 10, "Moderate": 8 };
+    const HEX    = { "Extreme": "#ef4444", "Very High": "#f59e0b", "High": "#3b82f6", "Moderate": "#22c55e" };
 
-    const SIZE_MAP = {
-      "Extreme": 18,
-      "Very High": 14,
-      "High": 11,
-      "Moderate": 9,
-    };
-
-    // ── Active filters ─────────────────────────────────────
     const activeLevels = new Set(["Extreme", "Very High", "High", "Moderate"]);
 
-    // ── Build graphics ─────────────────────────────────────
     const graphics = PERSECUTION_DATA.map((d, i) => new Graphic({
       geometry: new Point({ longitude: d.lng, latitude: d.lat }),
       attributes: {
-        OBJECTID: i + 1,
-        country: d.country,
-        iso: d.iso,
-        rank: d.rank || 999,
-        score: d.score || 0,
-        level: d.level,
-        region: d.region,
-        christianPop: d.christianPop,
-        mainReligion: d.mainReligion,
-        persecutionType: d.persecutionType,
-        summary: d.summary,
-        uscirf: d.uscirf || "None",
-        acn: d.acn || "None",
-        vom: d.vom || "None",
-        icc: d.icc ? "Yes" : "No",
-        heartcry: d.heartcry ? "Yes" : "No",
-        privatLife: d.privatLife || 0,
-        familyLife: d.familyLife || 0,
-        communityLife: d.communityLife || 0,
-        nationalLife: d.nationalLife || 0,
-        churchLife: d.churchLife || 0,
-        violence: d.violence || 0,
+        OBJECTID: i + 1, country: d.country, iso: d.iso,
+        rank: d.rank || 999, score: d.score || 0, level: d.level, region: d.region,
+        christianPop: d.christianPop, mainReligion: d.mainReligion,
+        persecutionType: d.persecutionType, summary: d.summary,
+        uscirf: d.uscirf || "None", acn: d.acn || "None", vom: d.vom || "None",
+        icc: d.icc ? "Yes" : "No", heartcry: d.heartcry ? "Yes" : "No",
+        privatLife: d.privatLife || 0, familyLife: d.familyLife || 0,
+        communityLife: d.communityLife || 0, nationalLife: d.nationalLife || 0,
+        churchLife: d.churchLife || 0, violence: d.violence || 0,
       },
     }));
 
-    // ── Create Feature Layer ───────────────────────────────
     const persecutionLayer = new FeatureLayer({
-      source: graphics,
-      objectIdField: "OBJECTID",
-      title: "Christian Persecution",
+      source: graphics, objectIdField: "OBJECTID", title: "Christian Persecution",
       fields: [
         { name: "OBJECTID", type: "oid" },
-        { name: "country", type: "string" },
-        { name: "iso", type: "string" },
-        { name: "rank", type: "integer" },
-        { name: "score", type: "integer" },
-        { name: "level", type: "string" },
-        { name: "region", type: "string" },
-        { name: "christianPop", type: "string" },
-        { name: "mainReligion", type: "string" },
-        { name: "persecutionType", type: "string" },
-        { name: "summary", type: "string" },
-        { name: "uscirf", type: "string" },
-        { name: "acn", type: "string" },
-        { name: "vom", type: "string" },
-        { name: "icc", type: "string" },
+        { name: "country", type: "string" }, { name: "iso", type: "string" },
+        { name: "rank", type: "integer" }, { name: "score", type: "integer" },
+        { name: "level", type: "string" }, { name: "region", type: "string" },
+        { name: "christianPop", type: "string" }, { name: "mainReligion", type: "string" },
+        { name: "persecutionType", type: "string" }, { name: "summary", type: "string" },
+        { name: "uscirf", type: "string" }, { name: "acn", type: "string" },
+        { name: "vom", type: "string" }, { name: "icc", type: "string" },
         { name: "heartcry", type: "string" },
-        { name: "privatLife", type: "double" },
-        { name: "familyLife", type: "double" },
-        { name: "communityLife", type: "double" },
-        { name: "nationalLife", type: "double" },
-        { name: "churchLife", type: "double" },
-        { name: "violence", type: "double" },
+        { name: "privatLife", type: "double" }, { name: "familyLife", type: "double" },
+        { name: "communityLife", type: "double" }, { name: "nationalLife", type: "double" },
+        { name: "churchLife", type: "double" }, { name: "violence", type: "double" },
       ],
       renderer: new UniqueValueRenderer({
         field: "level",
-        defaultSymbol: {
-          type: "simple-marker",
-          color: [105, 240, 174],
-          size: 9,
-          outline: { color: [0, 0, 0, 0.6], width: 1 },
-        },
+        defaultSymbol: { type: "simple-marker", color: [34,197,94], size: 8, outline: { color: [255,255,255,0.5], width: 1.5 } },
         uniqueValueInfos: Object.entries(COLORS).map(([level, color]) => ({
           value: level,
-          symbol: {
-            type: "simple-marker",
-            color: color,
-            size: SIZE_MAP[level],
-            outline: { color: [0, 0, 0, 0.6], width: 1 },
-          },
+          symbol: { type: "simple-marker", color, size: SIZES[level], outline: { color: [255,255,255,0.5], width: 1.5 } },
         })),
       }),
       popupTemplate: {
-        title: "{country}",
-        outFields: ["*"],
+        title: "{country}", outFields: ["*"],
         content: (feature) => {
           const a = feature.graphic.attributes;
-          const levelColor = {
-            "Extreme": "#ff1744",
-            "Very High": "#ff9100",
-            "High": "#ffea00",
-            "Moderate": "#69f0ae",
-          }[a.level] || "#6b7280";
-
-          let sources = [];
-          if (a.uscirf !== "None") sources.push(`USCIRF: ${a.uscirf}`);
-          if (a.acn !== "None") sources.push(`ACN: ${a.acn}`);
-          if (a.vom !== "None") sources.push(`VOM: ${a.vom}`);
-          if (a.icc === "Yes") sources.push("ICC");
-          if (a.heartcry === "Yes") sources.push("HeartCry");
-
+          const lc = HEX[a.level] || "#6b7280";
+          let src = [];
+          if (a.uscirf !== "None") src.push(`USCIRF: ${a.uscirf}`);
+          if (a.acn !== "None") src.push(`ACN: ${a.acn}`);
+          if (a.vom !== "None") src.push(`VOM: ${a.vom}`);
+          if (a.icc === "Yes") src.push("ICC");
+          if (a.heartcry === "Yes") src.push("HeartCry");
           const div = document.createElement("div");
-          div.classList.add("popup-content");
+          div.classList.add("popup-c");
           div.innerHTML = `
-            <div style="margin-bottom: 8px;">
-              <span class="popup-level" style="background: ${levelColor}; color: white;">
-                ${a.level} Persecution
-              </span>
-            </div>
-            ${a.rank < 999 ? `<div><span class="popup-score">${a.score}</span><span class="popup-max">/100</span> <span style="font-size:12px;color:#6b7280">(Rank #${a.rank})</span></div>` : ''}
-            <div style="margin-top: 8px; font-size: 12px; color: #6b7280;">
-              <strong>Region:</strong> ${a.region} | <strong>Type:</strong> ${a.persecutionType}
-            </div>
-            <p class="popup-summary">${a.summary}</p>
-            ${sources.length ? `<div class="popup-sources">${sources.map(s => `<span class="popup-source-tag">${s}</span>`).join('')}</div>` : ''}
-            <button class="popup-btn" onclick="window.showDetail('${a.country}')">View Full Details</button>
-          `;
+            <span class="popup-lvl" style="background:${lc}">${a.level} Persecution</span>
+            ${a.rank < 999 ? `<div><span class="popup-sc">${a.score}</span><span class="popup-mx">/100</span> <span style="font-size:11px;color:#6b7280">(#${a.rank})</span></div>` : ''}
+            <div style="margin-top:6px;font-size:11px;color:#6b7280"><strong>Region:</strong> ${a.region} | <strong>Type:</strong> ${a.persecutionType}</div>
+            <p class="popup-sm">${a.summary}</p>
+            ${src.length ? `<div class="popup-tags">${src.map(s => `<span class="popup-tag">${s}</span>`).join('')}</div>` : ''}
+            <button class="popup-btn" onclick="window.showDetail('${a.country}')">Full Details</button>`;
           return div;
         },
       },
       labelingInfo: [{
         labelExpressionInfo: { expression: "$feature.country" },
-        symbol: {
-          type: "text",
-          color: [255, 255, 255, 0.9],
-          haloColor: [0, 0, 0, 0.7],
-          haloSize: 1.5,
-          font: { size: 10, weight: "bold", family: "Inter" },
-        },
+        symbol: { type: "text", color: [255,255,255,0.85], haloColor: [0,0,0,0.7], haloSize: 1.5, font: { size: 10, weight: "bold", family: "Inter" } },
         minScale: 15000000,
       }],
     });
-
     map.add(persecutionLayer);
 
-    // ── Count levels & populate sidebar ────────────────────
+    // Counts
     const counts = { "Extreme": 0, "Very High": 0, "High": 0, "Moderate": 0 };
     PERSECUTION_DATA.forEach(d => { if (counts[d.level] !== undefined) counts[d.level]++; });
-    Object.entries(counts).forEach(([level, count]) => {
-      const el = document.getElementById(`count-${level}`);
-      if (el) el.textContent = count;
-    });
+    Object.entries(counts).forEach(([l, c]) => { const el = document.getElementById(`count-${l}`); if (el) el.textContent = c; });
 
-    // ── Build country list ─────────────────────────────────
+    // Country list
     function buildCountryList(filter = "") {
       const list = document.getElementById("countryList");
-      const lowerFilter = filter.toLowerCase();
+      const f = filter.toLowerCase();
       const filtered = PERSECUTION_DATA.filter(d =>
-        d.country.toLowerCase().includes(lowerFilter) ||
-        d.region.toLowerCase().includes(lowerFilter)
+        d.country.toLowerCase().includes(f) || d.region.toLowerCase().includes(f)
       ).sort((a, b) => (a.rank || 999) - (b.rank || 999));
 
       list.innerHTML = filtered.map(d => {
-        const color = {
-          "Extreme": "var(--extreme)",
-          "Very High": "var(--very-high)",
-          "High": "var(--high)",
-          "Moderate": "var(--moderate)",
-        }[d.level] || "var(--text-muted)";
-
-        return `
-          <div class="country-item" onclick="window.selectCountry('${d.country}')">
-            <div class="rank" style="background: ${color}">
-              ${d.rank || '-'}
-            </div>
-            <div class="info">
-              <div class="name">${d.country}</div>
-              <div class="region">${d.region}</div>
-            </div>
-            <div class="score-badge" style="color: ${color}">
-              ${d.score || '-'}
-            </div>
-          </div>
-        `;
+        const c = HEX[d.level] || "var(--text3)";
+        return `<div class="c-item" onclick="window.selectCountry('${d.country}')">
+          <div class="c-rank" style="background:${c}">${d.rank || '-'}</div>
+          <div class="c-info"><div class="c-name">${d.country}</div><div class="c-region">${d.region}</div></div>
+          <div class="c-score" style="color:${c}">${d.score || '-'}</div>
+        </div>`;
       }).join('');
     }
-
     buildCountryList();
 
-    // ── Filter countries ───────────────────────────────────
-    window.filterCountries = function () {
-      const val = document.getElementById("searchInput").value;
-      buildCountryList(val);
-    };
+    window.filterCountries = function () { buildCountryList(document.getElementById("searchInput").value); };
 
-    // ── Toggle level filter ────────────────────────────────
     window.toggleLevel = function (level) {
-      const item = document.querySelector(`.legend-item[data-level="${level}"]`);
-      if (activeLevels.has(level)) {
-        activeLevels.delete(level);
-        item.classList.add("inactive");
-      } else {
-        activeLevels.add(level);
-        item.classList.remove("inactive");
-      }
-      applyFilter();
+      const pill = document.querySelector(`.legend-pill[data-level="${level}"]`);
+      if (activeLevels.has(level)) { activeLevels.delete(level); pill.classList.add("inactive"); }
+      else { activeLevels.add(level); pill.classList.remove("inactive"); }
+      if (activeLevels.size === 4) persecutionLayer.definitionExpression = null;
+      else if (activeLevels.size === 0) persecutionLayer.definitionExpression = "1=0";
+      else persecutionLayer.definitionExpression = `level IN (${[...activeLevels].map(l => `'${l}'`).join(",")})`;
     };
 
-    function applyFilter() {
-      if (activeLevels.size === 4) {
-        persecutionLayer.definitionExpression = null;
-      } else if (activeLevels.size === 0) {
-        persecutionLayer.definitionExpression = "1=0";
-      } else {
-        const levels = [...activeLevels].map(l => `'${l}'`).join(",");
-        persecutionLayer.definitionExpression = `level IN (${levels})`;
-      }
-    }
-
-    // ── Select country ─────────────────────────────────────
-    window.selectCountry = function (countryName) {
-      const data = PERSECUTION_DATA.find(d => d.country === countryName);
-      if (!data) return;
-
-      // Zoom to country
-      view.goTo({ center: [data.lng, data.lat], zoom: 5 }, { duration: 1000 });
-
-      window.showDetail(countryName);
-    };
-
-    // ── Show detail panel ──────────────────────────────────
-    window.showDetail = function (countryName) {
-      const d = PERSECUTION_DATA.find(c => c.country === countryName);
+    window.selectCountry = function (name) {
+      const d = PERSECUTION_DATA.find(x => x.country === name);
       if (!d) return;
+      view.goTo({ center: [d.lng, d.lat], zoom: 5 }, { duration: 800 });
+      window.showDetail(name);
+    };
 
-      // Close popup
+    window.showDetail = function (name) {
+      const d = PERSECUTION_DATA.find(x => x.country === name);
+      if (!d) return;
       view.popup?.close();
+      document.getElementById("detailPlaceholder").style.display = "none";
+      const el = document.getElementById("detailContent");
+      el.style.display = "block";
 
-      const placeholder = document.getElementById("detailPlaceholder");
-      const content = document.getElementById("detailContent");
-      placeholder.style.display = "none";
-      content.style.display = "block";
+      const lc = HEX[d.level] || "#6b7280";
+      const circ = 2 * Math.PI * 42;
+      const off = circ * (1 - (d.score || 0) / 100);
 
-      const levelColor = {
-        "Extreme": "#ff1744",
-        "Very High": "#ff9100",
-        "High": "#ffea00",
-        "Moderate": "#69f0ae",
-      }[d.level] || "#6b7280";
-
-      const circumference = 2 * Math.PI * 45;
-      const scorePercent = (d.score || 0) / 100;
-      const dashOffset = circumference * (1 - scorePercent);
-
-      // Build sub-scores
-      const subScores = [
-        { label: "Private Life", value: d.privatLife, max: 16.7 },
-        { label: "Family Life", value: d.familyLife, max: 16.7 },
-        { label: "Community", value: d.communityLife, max: 16.7 },
-        { label: "National Life", value: d.nationalLife, max: 16.7 },
-        { label: "Church Life", value: d.churchLife, max: 16.7 },
-        { label: "Violence", value: d.violence, max: 16.7 },
+      const subs = [
+        { l: "Private Life", v: d.privatLife },
+        { l: "Family Life", v: d.familyLife },
+        { l: "Community", v: d.communityLife },
+        { l: "National Life", v: d.nationalLife },
+        { l: "Church Life", v: d.churchLife },
+        { l: "Violence", v: d.violence },
       ];
 
-      // Source badges
-      let badges = [];
-      if (d.uscirf === "CPC") badges.push('<span class="source-badge uscirf-cpc">USCIRF: CPC</span>');
-      if (d.uscirf === "SWL") badges.push('<span class="source-badge uscirf-swl">USCIRF: SWL</span>');
-      if (d.acn) badges.push(`<span class="source-badge acn">ACN: ${d.acn}</span>`);
-      if (d.vom) badges.push(`<span class="source-badge vom">VOM: ${d.vom}</span>`);
-      if (d.icc) badges.push('<span class="source-badge icc">ICC Watchlist</span>');
-      if (d.heartcry) badges.push('<span class="source-badge heartcry">HeartCry Presence</span>');
+      let tags = [];
+      if (d.uscirf === "CPC") tags.push('<span class="src-tag cpc">USCIRF: CPC</span>');
+      if (d.uscirf === "SWL") tags.push('<span class="src-tag swl">USCIRF: SWL</span>');
+      if (d.acn) tags.push(`<span class="src-tag acn">ACN: ${d.acn}</span>`);
+      if (d.vom) tags.push(`<span class="src-tag vom">VOM: ${d.vom}</span>`);
+      if (d.icc) tags.push('<span class="src-tag icc">ICC</span>');
+      if (d.heartcry) tags.push('<span class="src-tag hc">HeartCry</span>');
+      tags.push('<span class="src-tag od">Open Doors WWL</span>');
 
-      content.innerHTML = `
-        <div class="detail-header">
-          <div class="country-name">${d.country}</div>
-          <div class="rank-badge" style="background: ${levelColor}20; color: ${levelColor}; border: 1px solid ${levelColor}50;">
-            ${d.rank ? `#${d.rank}` : 'Not Ranked'} &mdash; ${d.level} Persecution
+      el.innerHTML = `
+        <div class="detail-head">
+          <h2>${d.country}</h2>
+          <div class="badge" style="background:${lc}22;color:${lc};border:1px solid ${lc}55;">
+            ${d.rank ? `#${d.rank}` : 'Unranked'} &mdash; ${d.level} Persecution
           </div>
         </div>
-
         ${d.score ? `
-        <div class="detail-score-ring">
-          <svg viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="45" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" />
-            <circle cx="60" cy="60" r="45" fill="none" stroke="${levelColor}" stroke-width="8"
-              stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"
-              transform="rotate(-90 60 60)" stroke-linecap="round" />
-            <text x="60" y="55" text-anchor="middle" class="score-text">${d.score}</text>
-            <text x="60" y="72" text-anchor="middle" class="score-label">out of 100</text>
+        <div class="score-ring">
+          <svg viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="7"/>
+            <circle cx="55" cy="55" r="42" fill="none" stroke="${lc}" stroke-width="7"
+              stroke-dasharray="${circ}" stroke-dashoffset="${off}"
+              transform="rotate(-90 55 55)" stroke-linecap="round"/>
+            <text x="55" y="52" text-anchor="middle" class="num">${d.score}</text>
+            <text x="55" y="68" text-anchor="middle" class="lbl">out of 100</text>
           </svg>
         </div>
-        ` : ''}
-
-        ${d.score ? `
-        <div class="detail-section">
-          <h3>Persecution Breakdown</h3>
-          <div class="sub-scores">
-            ${subScores.map(s => `
-              <div class="sub-score-item">
-                <span class="sub-score-label">${s.label}</span>
-                <div class="sub-score-bar-bg">
-                  <div class="sub-score-bar" style="width: ${(s.value / s.max * 100).toFixed(1)}%; background: ${levelColor};"></div>
-                </div>
-                <span class="sub-score-value" style="color: ${levelColor}">${s.value?.toFixed(1) || '-'}</span>
-              </div>
-            `).join('')}
+        <div class="bars">
+          ${subs.map(s => `<div class="bar-row">
+            <span class="bar-label">${s.l}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(s.v/16.7*100).toFixed(1)}%;background:${lc}"></div></div>
+            <span class="bar-val" style="color:${lc}">${s.v?.toFixed(1) || '-'}</span>
+          </div>`).join('')}
+        </div>` : ''}
+        <div class="d-section">
+          <h4>Overview</h4>
+          <div class="info-table">
+            <div class="row"><span class="lbl">Region</span><span class="val">${d.region}</span></div>
+            <div class="row"><span class="lbl">Main Religion</span><span class="val">${d.mainReligion}</span></div>
+            <div class="row"><span class="lbl">Christian Pop.</span><span class="val">${d.christianPop}</span></div>
+            <div class="row"><span class="lbl">Persecution Type</span><span class="val">${d.persecutionType}</span></div>
           </div>
         </div>
-        ` : ''}
-
-        <div class="detail-section">
-          <h3>Overview</h3>
-          <div class="info-row">
-            <span class="label">Region</span>
-            <span class="value">${d.region}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Main Religion</span>
-            <span class="value">${d.mainReligion}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Christian Population</span>
-            <span class="value">${d.christianPop}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Persecution Type</span>
-            <span class="value">${d.persecutionType}</span>
-          </div>
-        </div>
-
-        <div class="detail-section">
-          <h3>Summary</h3>
-          <p>${d.summary}</p>
-        </div>
-
-        ${d.keyFacts && d.keyFacts.length ? `
-        <div class="detail-section">
-          <h3>Key Facts</h3>
-          <ul>
-            ${d.keyFacts.map(f => `<li>${f}</li>`).join('')}
-          </ul>
-        </div>
-        ` : ''}
-
-        <div class="detail-section">
-          <h3>Monitoring Sources</h3>
-          <div class="source-badges">
-            ${badges.join('')}
-            <span class="source-badge" style="background: rgba(255,255,255,0.08); color: var(--text-secondary); border: 1px solid var(--border);">Open Doors WWL</span>
-          </div>
-        </div>
-      `;
+        <div class="d-section"><h4>Summary</h4><p>${d.summary}</p></div>
+        ${d.keyFacts?.length ? `<div class="d-section"><h4>Key Facts</h4><ul>${d.keyFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
+        <div class="d-section"><h4>Sources</h4><div class="src-tags">${tags.join('')}</div></div>`;
     };
 
-    // ── Map click → detail ─────────────────────────────────
-    view.on("click", async (event) => {
-      const response = await view.hitTest(event);
-      const result = response.results.find(r => r.graphic?.layer === persecutionLayer);
-      if (result) {
-        const country = result.graphic.attributes.country;
-        window.showDetail(country);
-      }
+    view.on("click", async (e) => {
+      const r = await view.hitTest(e);
+      const hit = r.results.find(x => x.graphic?.layer === persecutionLayer);
+      if (hit) window.showDetail(hit.graphic.attributes.country);
     });
 
-    // ── About dialog ───────────────────────────────────────
     document.getElementById("aboutBtn").addEventListener("click", () => {
-      const dialog = document.getElementById("aboutDialog");
-      dialog.open = true;
-
-      // Populate sources
-      const sourcesList = document.getElementById("sourcesList");
-      sourcesList.innerHTML = GLOBAL_STATS.sources.map(s => `
-        <div class="source-item">
-          <div class="source-name">${s.name}</div>
-          <div class="source-meta">${s.countries} countries | ${s.type}</div>
-          <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
-        </div>
-      `).join('');
+      document.getElementById("aboutDialog").open = true;
+      document.getElementById("sourcesList").innerHTML = GLOBAL_STATS.sources.map(s => `
+        <div class="src-entry"><div class="sn">${s.name}</div><div class="sm">${s.countries} countries | ${s.type}</div>
+        <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a></div>`).join('');
     });
-
-    console.log("Christian Persecution Map initialized with", PERSECUTION_DATA.length, "countries.");
   </script>
-
 </body>
 </html>
