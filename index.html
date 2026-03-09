@@ -56,7 +56,38 @@
       --calcite-color-foreground-1: var(--bg-panel);
     }
 
-    calcite-shell-panel[slot="panel-start"] calcite-panel {
+    /* ── LEFT PANEL TAB LAYOUT ─────────────────────────────── */
+    .left-panel-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .left-panel-wrapper calcite-tabs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .left-panel-wrapper calcite-tab-nav {
+      flex-shrink: 0;
+    }
+
+    .left-panel-wrapper calcite-tab {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-content-dashboard {
+      padding: 8px;
+      overflow: hidden;
+    }
+
+    .tab-content-countries {
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -69,11 +100,15 @@
       --calcite-color-text-2: var(--text-secondary);
     }
 
-    calcite-block {
+    calcite-tabs {
       --calcite-color-foreground-1: var(--bg-panel);
       --calcite-color-text-1: var(--text-primary);
       --calcite-color-text-2: var(--text-secondary);
-      --calcite-color-border-3: var(--border);
+    }
+
+    calcite-tab-title {
+      --calcite-color-text-1: var(--text-primary);
+      --calcite-color-text-3: var(--text-muted);
     }
 
     /* ── HEADER ────────────────────────────────────────────── */
@@ -211,7 +246,6 @@
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      max-height: calc(100vh - 480px);
     }
 
     .country-list::-webkit-scrollbar {
@@ -621,74 +655,93 @@
     <!-- ── LEFT PANEL ──────────────────────────────────────── -->
     <calcite-shell-panel slot="panel-start" position="start">
       <calcite-panel heading="Dashboard">
+        <div class="left-panel-wrapper">
+          <calcite-tabs>
+            <calcite-tab-nav slot="title-group">
+              <calcite-tab-title selected icon-start="graph-bar">Dashboard</calcite-tab-title>
+              <calcite-tab-title icon-start="list">Countries</calcite-tab-title>
+            </calcite-tab-nav>
 
-        <!-- Global Stats -->
-        <calcite-block heading="Global Statistics" description="Oct 2023 – Sep 2024" collapsible open>
-          <calcite-icon slot="icon" icon="graph-bar" scale="s"></calcite-icon>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="value">365M</div>
-              <div class="label">Persecuted</div>
-            </div>
-            <div class="stat-card">
-              <div class="value">4,998</div>
-              <div class="label">Killed</div>
-            </div>
-            <div class="stat-card">
-              <div class="value">14,766</div>
-              <div class="label">Churches Hit</div>
-            </div>
-            <div class="stat-card">
-              <div class="value">3,906</div>
-              <div class="label">Detained</div>
-            </div>
-            <div class="stat-card">
-              <div class="value">3,300</div>
-              <div class="label">Abducted</div>
-            </div>
-            <div class="stat-card">
-              <div class="value">78</div>
-              <div class="label">Countries</div>
-            </div>
-          </div>
-        </calcite-block>
+            <!-- TAB 1: Dashboard (stats + legend) -->
+            <calcite-tab selected>
+              <div class="tab-content-dashboard">
+                <!-- Global Stats -->
+                <div class="stats-grid">
+                  <div class="stat-card">
+                    <div class="value">365M</div>
+                    <div class="label">Persecuted</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="value">4,998</div>
+                    <div class="label">Killed</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="value">14,766</div>
+                    <div class="label">Churches Hit</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="value">3,906</div>
+                    <div class="label">Detained</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="value">3,300</div>
+                    <div class="label">Abducted</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="value">78</div>
+                    <div class="label">Countries</div>
+                  </div>
+                </div>
 
-        <!-- Persecution Level Legend -->
-        <calcite-block heading="Persecution Levels" description="Click to filter" collapsible open>
-          <calcite-icon slot="icon" icon="legend" scale="s"></calcite-icon>
-          <div class="legend-items" id="legendContainer">
-            <div class="legend-item" data-level="Extreme" onclick="toggleLevel('Extreme')">
-              <div class="legend-dot" style="background: var(--extreme)"></div>
-              <span class="legend-label">Extreme (81-100)</span>
-              <span class="legend-count" id="count-Extreme">0</span>
-            </div>
-            <div class="legend-item" data-level="Very High" onclick="toggleLevel('Very High')">
-              <div class="legend-dot" style="background: var(--very-high)"></div>
-              <span class="legend-label">Very High (61-80)</span>
-              <span class="legend-count" id="count-Very High">0</span>
-            </div>
-            <div class="legend-item" data-level="High" onclick="toggleLevel('High')">
-              <div class="legend-dot" style="background: var(--high)"></div>
-              <span class="legend-label">High (41-60)</span>
-              <span class="legend-count" id="count-High">0</span>
-            </div>
-            <div class="legend-item" data-level="Moderate" onclick="toggleLevel('Moderate')">
-              <div class="legend-dot" style="background: var(--moderate)"></div>
-              <span class="legend-label">Moderate</span>
-              <span class="legend-count" id="count-Moderate">0</span>
-            </div>
-          </div>
-        </calcite-block>
+                <!-- Persecution Level Legend -->
+                <div style="margin-top: 12px;">
+                  <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; padding: 0 8px 6px;">Persecution Levels — click to filter</div>
+                  <div class="legend-items" id="legendContainer">
+                    <div class="legend-item" data-level="Extreme" onclick="toggleLevel('Extreme')">
+                      <div class="legend-dot" style="background: var(--extreme)"></div>
+                      <span class="legend-label">Extreme (81-100)</span>
+                      <span class="legend-count" id="count-Extreme">0</span>
+                    </div>
+                    <div class="legend-item" data-level="Very High" onclick="toggleLevel('Very High')">
+                      <div class="legend-dot" style="background: var(--very-high)"></div>
+                      <span class="legend-label">Very High (61-80)</span>
+                      <span class="legend-count" id="count-Very High">0</span>
+                    </div>
+                    <div class="legend-item" data-level="High" onclick="toggleLevel('High')">
+                      <div class="legend-dot" style="background: var(--high)"></div>
+                      <span class="legend-label">High (41-60)</span>
+                      <span class="legend-count" id="count-High">0</span>
+                    </div>
+                    <div class="legend-item" data-level="Moderate" onclick="toggleLevel('Moderate')">
+                      <div class="legend-dot" style="background: var(--moderate)"></div>
+                      <span class="legend-label">Moderate</span>
+                      <span class="legend-count" id="count-Moderate">0</span>
+                    </div>
+                  </div>
+                </div>
 
-        <!-- Search & Country List -->
-        <calcite-block heading="Countries" description="Search and select" collapsible open>
-          <calcite-icon slot="icon" icon="list" scale="s"></calcite-icon>
-          <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search countries..." oninput="filterCountries()" />
-          </div>
-          <div class="country-list" id="countryList"></div>
-        </calcite-block>
+                <!-- Reporting period note -->
+                <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid var(--border);">
+                  <div style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+                    Reporting period: Oct 2023 – Sep 2024<br>
+                    Primary source: Open Doors World Watch List 2025
+                  </div>
+                </div>
+              </div>
+            </calcite-tab>
 
+            <!-- TAB 2: Countries (search + list) -->
+            <calcite-tab>
+              <div class="tab-content-countries">
+                <div class="search-box">
+                  <input type="text" class="search-input" id="searchInput" placeholder="Search countries or regions..." oninput="filterCountries()" />
+                </div>
+                <div class="country-list" id="countryList"></div>
+              </div>
+            </calcite-tab>
+
+          </calcite-tabs>
+        </div>
       </calcite-panel>
     </calcite-shell-panel>
 
